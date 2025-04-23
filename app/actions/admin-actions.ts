@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { put, del } from "@vercel/blob"
-import { supabase } from "../lib/supabase"
+import { supabaseAdmin } from "../lib/supabase-admin"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "../lib/auth"
 
@@ -69,7 +69,7 @@ export async function uploadImage(formData: FormData): Promise<UploadResult> {
     })
 
     // Get the next display order
-    const { data: existingImages } = await supabase
+    const { data: existingImages } = await supabaseAdmin
       .from("images")
       .select("display_order")
       .eq("category", category)
@@ -78,8 +78,8 @@ export async function uploadImage(formData: FormData): Promise<UploadResult> {
 
     const nextOrder = existingImages && existingImages.length > 0 ? existingImages[0].display_order + 1 : 1
 
-    // Store metadata in Supabase
-    const { data, error } = await supabase
+    // Store metadata in Supabase using the admin client
+    const { data, error } = await supabaseAdmin
       .from("images")
       .insert({
         url: blob.url,
@@ -98,7 +98,7 @@ export async function uploadImage(formData: FormData): Promise<UploadResult> {
       console.error("Database error:", error)
       return {
         success: false,
-        message: "Fehler beim Speichern der Bilddaten",
+        message: "Fehler beim Speichern der Bilddaten: " + error.message,
       }
     }
 
@@ -116,7 +116,7 @@ export async function uploadImage(formData: FormData): Promise<UploadResult> {
     console.error("Upload error:", error)
     return {
       success: false,
-      message: "Fehler beim Hochladen des Bildes",
+      message: "Fehler beim Hochladen des Bildes: " + (error instanceof Error ? error.message : String(error)),
     }
   }
 }
@@ -132,7 +132,7 @@ export async function deleteImage(id: string): Promise<UploadResult> {
 
   try {
     // Get the image data
-    const { data: image, error: fetchError } = await supabase.from("images").select("*").eq("id", id).single()
+    const { data: image, error: fetchError } = await supabaseAdmin.from("images").select("*").eq("id", id).single()
 
     if (fetchError || !image) {
       return {
@@ -150,7 +150,7 @@ export async function deleteImage(id: string): Promise<UploadResult> {
     }
 
     // Delete from database
-    const { error: deleteError } = await supabase.from("images").delete().eq("id", id)
+    const { error: deleteError } = await supabaseAdmin.from("images").delete().eq("id", id)
 
     if (deleteError) {
       return {
@@ -193,7 +193,7 @@ export async function updateImageMetadata(formData: FormData): Promise<UploadRes
     const section = formData.get("section") as string
     const displayOrder = Number.parseInt(formData.get("displayOrder") as string) || 0
 
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from("images")
       .update({
         title,
@@ -241,7 +241,7 @@ export async function reorderImages(category: string, orderedIds: string[]): Pro
   try {
     // Update each image's display_order
     for (let i = 0; i < orderedIds.length; i++) {
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from("images")
         .update({
           display_order: i + 1,
@@ -295,7 +295,7 @@ export async function updateSiteContent(formData: FormData): Promise<ContentUpda
       }
     }
 
-    const { error } = await supabase.from("content").upsert({
+    const { error } = await supabaseAdmin.from("content").upsert({
       key,
       title,
       content,

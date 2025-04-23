@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js"
+import { supabaseAdmin } from "./supabase-admin"
 
 // These environment variables are automatically available from the Supabase integration
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
@@ -32,7 +33,10 @@ export type ContentRecord = {
 
 // Helper functions for database operations
 export async function getImages(category?: string): Promise<ImageRecord[]> {
-  let query = supabase.from("images").select("*")
+  // Use admin client for server-side operations
+  const client = typeof window === "undefined" ? supabaseAdmin : supabase
+
+  let query = client.from("images").select("*")
 
   if (category) {
     query = query.eq("category", category)
@@ -49,7 +53,10 @@ export async function getImages(category?: string): Promise<ImageRecord[]> {
 }
 
 export async function getContent(key: string): Promise<ContentRecord | null> {
-  const { data, error } = await supabase.from("content").select("*").eq("key", key).single()
+  // Use admin client for server-side operations
+  const client = typeof window === "undefined" ? supabaseAdmin : supabase
+
+  const { data, error } = await client.from("content").select("*").eq("key", key).single()
 
   if (error) {
     console.error(`Error fetching content for key ${key}:`, error)
@@ -60,7 +67,8 @@ export async function getContent(key: string): Promise<ContentRecord | null> {
 }
 
 export async function updateContent(key: string, title: string, content: string): Promise<boolean> {
-  const { error } = await supabase.from("content").upsert({
+  // Always use admin client for updates
+  const { error } = await supabaseAdmin.from("content").upsert({
     key,
     title,
     content,
