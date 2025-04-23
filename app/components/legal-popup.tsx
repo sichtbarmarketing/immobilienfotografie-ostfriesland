@@ -15,11 +15,13 @@ export default function LegalPopup({ contentKey, isOpen, onClose }: LegalPopupPr
   const [title, setTitle] = useState("")
   const [content, setContent] = useState("")
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
   useEffect(() => {
     if (isOpen) {
       const loadContent = async () => {
         setLoading(true)
+        setError(false)
         try {
           const data = await getContent(contentKey)
           if (data) {
@@ -31,7 +33,8 @@ export default function LegalPopup({ contentKey, isOpen, onClose }: LegalPopupPr
           }
         } catch (error) {
           console.error("Error loading content:", error)
-          setTitle("Fehler")
+          setError(true)
+          setTitle(contentKey === "impressum" ? "Impressum" : "Datenschutzerklärung")
           setContent("Der Inhalt konnte nicht geladen werden.")
         } finally {
           setLoading(false)
@@ -57,6 +60,10 @@ export default function LegalPopup({ contentKey, isOpen, onClose }: LegalPopupPr
         <div className="p-6">
           {loading ? (
             <div className="py-8 text-center">Inhalt wird geladen...</div>
+          ) : error ? (
+            <div className="py-8 text-center text-red-500">
+              Es gab ein Problem beim Laden des Inhalts. Bitte versuchen Sie es später erneut.
+            </div>
           ) : (
             <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: content }} />
           )}

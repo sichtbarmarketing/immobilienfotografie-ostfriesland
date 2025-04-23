@@ -132,9 +132,13 @@ export default function Footer() {
       </div>
 
       {/* Legal Popups */}
-      <LegalPopup contentKey="impressum" isOpen={impressumOpen} onClose={() => setImpressumOpen(false)} />
+      {impressumOpen && (
+        <LegalPopup contentKey="impressum" isOpen={impressumOpen} onClose={() => setImpressumOpen(false)} />
+      )}
 
-      <LegalPopup contentKey="datenschutz" isOpen={datenschutzOpen} onClose={() => setDatenschutzOpen(false)} />
+      {datenschutzOpen && (
+        <LegalPopup contentKey="datenschutz" isOpen={datenschutzOpen} onClose={() => setDatenschutzOpen(false)} />
+      )}
     </footer>
   )
 }

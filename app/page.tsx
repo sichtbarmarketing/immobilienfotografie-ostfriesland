@@ -11,14 +11,28 @@ import Footer from "@/app/components/footer"
 import { getImages } from "./lib/supabase"
 
 export default async function LandingPage() {
-  // Fetch images for different sections
-  const heroImages = await getImages("hero")
-  const introImages = await getImages("intro")
-  const interiorImages = await getImages("interior")
-  const exteriorImages = await getImages("exterior")
-  const droneImages = await getImages("drone")
-  const virtualStagingImages = await getImages("virtual-staging")
-  const aboutImages = await getImages("about")
+  // Wrap image fetching in try/catch to prevent client-side errors
+  let heroImages = []
+  let introImages = []
+  let interiorImages = []
+  let exteriorImages = []
+  let droneImages = []
+  let virtualStagingImages = []
+  let aboutImages = []
+
+  try {
+    // Fetch images for different sections
+    heroImages = await getImages("hero")
+    introImages = await getImages("intro")
+    interiorImages = await getImages("interior")
+    exteriorImages = await getImages("exterior")
+    droneImages = await getImages("drone")
+    virtualStagingImages = await getImages("virtual-staging")
+    aboutImages = await getImages("about")
+  } catch (error) {
+    console.error("Error fetching images:", error)
+    // Continue with empty arrays if there's an error
+  }
 
   // Use the first image from each category, or fall back to placeholder
   const heroImage = heroImages.length > 0 ? heroImages[0].url : "/images/hero-modern-house.jpg"
@@ -63,7 +77,7 @@ export default async function LandingPage() {
         <section className="relative">
           <div className="absolute inset-0 z-0">
             <Image
-              src={heroImage || "/placeholder.svg"}
+              src={heroImage || "/placeholder.svg?height=1080&width=1920&query=modern+house+exterior"}
               alt="Moderne Immobilienfotografie"
               fill
               className="object-cover brightness-[0.8]"
@@ -116,7 +130,7 @@ export default async function LandingPage() {
                 introImages.slice(0, 3).map((image, index) => (
                   <div key={image.id} className="overflow-hidden rounded-lg">
                     <Image
-                      src={image.url || "/placeholder.svg"}
+                      src={image.url || "/placeholder.svg?height=300&width=400&query=interior+real+estate"}
                       alt={image.alt_text}
                       width={400}
                       height={300}
@@ -128,7 +142,7 @@ export default async function LandingPage() {
                 <>
                   <div className="overflow-hidden rounded-lg">
                     <Image
-                      src="/images/living-room-bright.jpg"
+                      src="/sun-drenched-loft.png"
                       alt="Wohnzimmer mit natürlichem Licht"
                       width={400}
                       height={300}
@@ -137,7 +151,7 @@ export default async function LandingPage() {
                   </div>
                   <div className="overflow-hidden rounded-lg">
                     <Image
-                      src="/images/kitchen-modern.jpg"
+                      src="/sleek-minimalist-kitchen.png"
                       alt="Moderne Küche"
                       width={400}
                       height={300}
@@ -146,7 +160,7 @@ export default async function LandingPage() {
                   </div>
                   <div className="overflow-hidden rounded-lg">
                     <Image
-                      src="/images/bathroom-luxury.jpg"
+                      src="/serene-spa-retreat.png"
                       alt="Luxuriöses Badezimmer"
                       width={400}
                       height={300}
@@ -280,7 +294,7 @@ export default async function LandingPage() {
                     ? interiorImages.map((image) => (
                         <div key={image.id} className="overflow-hidden rounded-lg">
                           <Image
-                            src={image.url || "/placeholder.svg"}
+                            src={image.url || "/placeholder.svg?height=400&width=600&query=interior+design"}
                             alt={image.alt_text}
                             width={600}
                             height={400}
@@ -292,7 +306,7 @@ export default async function LandingPage() {
                       Array.from({ length: 6 }).map((_, index) => (
                         <div key={`interior-${index}`} className="overflow-hidden rounded-lg">
                           <Image
-                            src={`/images/interior-${["living", "kitchen", "bedroom", "bathroom", "dining", "office"][index % 6]}-1.jpg`}
+                            src={`/cozy-reading-nook.png?height=400&width=600&query=interior+${index + 1}`}
                             alt={`Innenaufnahme ${index + 1}`}
                             width={600}
                             height={400}
@@ -309,7 +323,7 @@ export default async function LandingPage() {
                     ? exteriorImages.map((image) => (
                         <div key={image.id} className="overflow-hidden rounded-lg">
                           <Image
-                            src={image.url || "/placeholder.svg"}
+                            src={image.url || "/placeholder.svg?height=400&width=600&query=house+exterior"}
                             alt={image.alt_text}
                             width={600}
                             height={400}
@@ -321,7 +335,7 @@ export default async function LandingPage() {
                       Array.from({ length: 6 }).map((_, index) => (
                         <div key={`exterior-${index}`} className="overflow-hidden rounded-lg">
                           <Image
-                            src={`/images/exterior-${["front", "garden", "twilight", "pool", "entrance", "backyard"][index % 6]}-1.jpg`}
+                            src={`/modern-suburban-home.png?height=400&width=600&query=house+exterior+${index + 1}`}
                             alt={`Außenaufnahme ${index + 1}`}
                             width={600}
                             height={400}
@@ -338,7 +352,7 @@ export default async function LandingPage() {
                     ? droneImages.map((image) => (
                         <div key={image.id} className="overflow-hidden rounded-lg">
                           <Image
-                            src={image.url || "/placeholder.svg"}
+                            src={image.url || "/placeholder.svg?height=400&width=600&query=aerial+property+view"}
                             alt={image.alt_text}
                             width={600}
                             height={400}
@@ -350,7 +364,7 @@ export default async function LandingPage() {
                       Array.from({ length: 6 }).map((_, index) => (
                         <div key={`drone-${index}`} className="overflow-hidden rounded-lg">
                           <Image
-                            src={`/images/drone-${["property", "estate", "land", "commercial", "sunset", "neighborhood"][index % 6]}-1.jpg`}
+                            src={`/placeholder.svg?height=400&width=600&query=aerial+property+view+${index + 1}`}
                             alt={`Drohnenaufnahme ${index + 1}`}
                             width={600}
                             height={400}
@@ -370,7 +384,7 @@ export default async function LandingPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
               <div>
                 <Image
-                  src={virtualStagingImage || "/placeholder.svg"}
+                  src={virtualStagingImage || "/placeholder.svg?height=600&width=600&query=virtual+staging+comparison"}
                   alt="Virtual Homestaging Vorher/Nachher Vergleich"
                   width={600}
                   height={600}
@@ -475,7 +489,7 @@ export default async function LandingPage() {
               </div>
               <div>
                 <Image
-                  src={aboutImage || "/placeholder.svg"}
+                  src={aboutImage || "/placeholder.svg?height=600&width=600&query=professional+photographer"}
                   alt="Immobilienfotograf"
                   width={600}
                   height={600}
