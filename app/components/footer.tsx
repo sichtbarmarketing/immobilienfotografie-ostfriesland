@@ -14,7 +14,9 @@ export default function Footer() {
       <div className="container mx-auto px-4 md:px-6 py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           <div className="md:col-span-1">
-            <DynamicLogo className="mb-6" iconClassName="h-6 w-6 text-white" textClassName="text-white" />
+            <Link href="/" className="inline-block mb-6">
+              <DynamicLogo iconClassName="h-8 w-auto filter brightness-0 invert" />
+            </Link>
             <p className="text-white/70 mb-6 max-w-md">
               Professionelle Immobilienfotografie, Immobilienvideos und Virtual Homestaging in ganz Ostfriesland. Ich
               helfe Ihnen, Ihre Immobilie optimal zu präsentieren.

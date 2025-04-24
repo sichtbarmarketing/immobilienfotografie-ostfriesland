@@ -27,11 +27,9 @@ export default function AppleHeader() {
     >
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex h-16 items-center justify-between">
-          <DynamicLogo
-            className={isScrolled ? "" : "text-white"}
-            iconClassName={`h-6 w-6 ${isScrolled ? "" : "text-white"}`}
-            textClassName={isScrolled ? "" : "text-white"}
-          />
+          <Link href="/">
+            <DynamicLogo iconClassName={`h-8 w-auto ${isScrolled ? "" : "filter brightness-0 invert"}`} />
+          </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">

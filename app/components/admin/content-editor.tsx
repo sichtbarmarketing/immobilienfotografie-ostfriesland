@@ -196,14 +196,13 @@ export default function ContentEditor() {
 
 function LogoUploader() {
   const [logoUrl, setLogoUrl] = useState<string>("/logo.svg")
-  const [siteName, setSiteName] = useState<string>("sichtbar.immo")
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [updateResult, setUpdateResult] = useState<{ success: boolean; message: string } | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
-  // Load current logo and site name
+  // Load current logo
   useEffect(() => {
     const fetchSettings = async () => {
       setLoading(true)
@@ -214,10 +213,7 @@ function LogoUploader() {
 
         if (response.ok && data.success) {
           const logoSetting = data.settings.find((s: any) => s.key === "logo_url")
-          const nameSetting = data.settings.find((s: any) => s.key === "site_name")
-
           if (logoSetting) setLogoUrl(logoSetting.value)
-          if (nameSetting) setSiteName(nameSetting.value)
         }
       } catch (error) {
         console.error("Error loading settings:", error)
@@ -312,7 +308,6 @@ function LogoUploader() {
                   }}
                 />
               </div>
-              <p className="text-sm text-muted-foreground">{siteName}</p>
             </div>
           )}
         </div>
@@ -320,11 +315,6 @@ function LogoUploader() {
         <div>
           <h3 className="text-lg font-medium mb-4">Logo aktualisieren</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="site_name">Website-Name</Label>
-              <Input id="site_name" name="site_name" defaultValue={siteName} />
-            </div>
-
             <div className="space-y-2">
               <Label htmlFor="logo">Neues Logo hochladen</Label>
               <Input
@@ -335,7 +325,8 @@ function LogoUploader() {
                 onChange={handleFileChange}
               />
               <p className="text-xs text-muted-foreground">
-                Empfohlenes Format: SVG oder PNG mit transparentem Hintergrund
+                Empfohlenes Format: SVG oder PNG mit transparentem Hintergrund. Das Logo sollte bereits den Seitennamen
+                enthalten.
               </p>
             </div>
 
