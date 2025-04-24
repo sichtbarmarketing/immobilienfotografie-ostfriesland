@@ -8,14 +8,20 @@ export function ContactForm() {
   const [state, action] = useActionState<ContactFormState, FormData>(submitContactForm, {})
 
   return (
-    <form className="space-y-6" action={action}>
+    <form className="space-y-8" action={action}>
       {state?.message && (
-        <div className={`p-4 rounded-md ${state.success ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
+        <div
+          className={`p-6 rounded-xl ${
+            state.success
+              ? "bg-black/5 text-black dark:bg-white/10 dark:text-white"
+              : "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400"
+          }`}
+        >
           {state.message}
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div className="space-y-2">
           <label
             htmlFor="name"
@@ -26,10 +32,12 @@ export function ContactForm() {
           <input
             id="name"
             name="name"
-            className={`flex h-10 w-full rounded-md border ${state?.errors?.name ? "border-red-500" : "border-input"} bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`}
+            className={`flex h-12 w-full rounded-xl border ${
+              state?.errors?.name ? "border-red-500" : "border-input"
+            } bg-transparent px-4 py-3 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`}
             placeholder="Ihr Name"
           />
-          {state?.errors?.name && <p className="text-sm text-red-500">{state.errors.name[0]}</p>}
+          {state?.errors?.name && <p className="text-sm text-red-500 dark:text-red-400">{state.errors.name[0]}</p>}
         </div>
         <div className="space-y-2">
           <label
@@ -42,10 +50,12 @@ export function ContactForm() {
             id="email"
             name="email"
             type="email"
-            className={`flex h-10 w-full rounded-md border ${state?.errors?.email ? "border-red-500" : "border-input"} bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`}
+            className={`flex h-12 w-full rounded-xl border ${
+              state?.errors?.email ? "border-red-500" : "border-input"
+            } bg-transparent px-4 py-3 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`}
             placeholder="Ihre E-Mail"
           />
-          {state?.errors?.email && <p className="text-sm text-red-500">{state.errors.email[0]}</p>}
+          {state?.errors?.email && <p className="text-sm text-red-500 dark:text-red-400">{state.errors.email[0]}</p>}
         </div>
       </div>
       <div className="space-y-2">
@@ -58,7 +68,7 @@ export function ContactForm() {
         <input
           id="phone"
           name="phone"
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex h-12 w-full rounded-xl border border-input bg-transparent px-4 py-3 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           placeholder="Ihre Telefonnummer"
         />
       </div>
@@ -72,7 +82,9 @@ export function ContactForm() {
         <select
           id="service"
           name="service"
-          className={`flex h-10 w-full rounded-md border ${state?.errors?.service ? "border-red-500" : "border-input"} bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`}
+          className={`flex h-12 w-full rounded-xl border ${
+            state?.errors?.service ? "border-red-500" : "border-input"
+          } bg-transparent px-4 py-3 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`}
         >
           <option value="">Bitte auswählen</option>
           <option value="fotografie">Immobilienfotografie</option>
@@ -82,7 +94,7 @@ export function ContactForm() {
           <option value="rundgang">360° Rundgang</option>
           <option value="komplett">Komplettpaket</option>
         </select>
-        {state?.errors?.service && <p className="text-sm text-red-500">{state.errors.service[0]}</p>}
+        {state?.errors?.service && <p className="text-sm text-red-500 dark:text-red-400">{state.errors.service[0]}</p>}
       </div>
       <div className="space-y-2">
         <label
@@ -94,7 +106,7 @@ export function ContactForm() {
         <input
           id="address"
           name="address"
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex h-12 w-full rounded-xl border border-input bg-transparent px-4 py-3 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           placeholder="Straße, Hausnummer, PLZ, Ort"
         />
       </div>
@@ -108,26 +120,33 @@ export function ContactForm() {
         <textarea
           id="message"
           name="message"
-          className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex min-h-[150px] w-full rounded-xl border border-input bg-transparent px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           placeholder="Ihre Nachricht und weitere Details zur Immobilie"
         />
       </div>
-      <div className="flex items-start space-x-2">
+      <div className="flex items-start space-x-3">
         <input
           type="checkbox"
           id="privacy"
           name="privacy"
-          className={`mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary ${state?.errors?.privacy ? "border-red-500" : ""}`}
+          className={`mt-1 h-5 w-5 rounded border-gray-300 text-black focus:ring-black ${
+            state?.errors?.privacy ? "border-red-500" : ""
+          }`}
         />
         <label
           htmlFor="privacy"
-          className={`text-sm ${state?.errors?.privacy ? "text-red-500" : "text-muted-foreground"}`}
+          className={`text-sm ${state?.errors?.privacy ? "text-red-500 dark:text-red-400" : "text-muted-foreground"}`}
         >
           Ich stimme der Verarbeitung meiner Daten gemäß der Datenschutzerklärung zu *
         </label>
       </div>
-      {state?.errors?.privacy && <p className="text-sm text-red-500 mt-1">{state.errors.privacy[0]}</p>}
-      <Button type="submit" className="w-full">
+      {state?.errors?.privacy && (
+        <p className="text-sm text-red-500 dark:text-red-400 mt-1">{state.errors.privacy[0]}</p>
+      )}
+      <Button
+        type="submit"
+        className="w-full rounded-full bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90 h-12 text-base"
+      >
         Anfrage senden
       </Button>
       <p className="text-xs text-muted-foreground text-center mt-2">* Pflichtfelder</p>

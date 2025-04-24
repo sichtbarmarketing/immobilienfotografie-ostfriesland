@@ -110,11 +110,11 @@ export default function LegalPopup({ contentKey, isOpen, onClose }: LegalPopupPr
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-background rounded-lg shadow-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-background p-4 border-b flex justify-between items-center">
-          <h2 className="text-xl font-bold">{title}</h2>
-          <Button variant="ghost" size="icon" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-black rounded-2xl shadow-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-white dark:bg-black p-6 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+          <h2 className="text-2xl font-medium">{title}</h2>
+          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
             <X className="h-5 w-5" />
           </Button>
         </div>
@@ -123,12 +123,18 @@ export default function LegalPopup({ contentKey, isOpen, onClose }: LegalPopupPr
           {loading ? (
             <div className="py-8 text-center">Inhalt wird geladen...</div>
           ) : (
-            <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: content }} />
+            <div
+              className="prose prose-sm max-w-none dark:prose-invert"
+              dangerouslySetInnerHTML={{ __html: content }}
+            />
           )}
         </div>
 
-        <div className="sticky bottom-0 bg-background p-4 border-t flex justify-end">
-          <Button variant="outline" onClick={onClose}>
+        <div className="sticky bottom-0 bg-white dark:bg-black p-6 border-t border-gray-200 dark:border-gray-800 flex justify-end">
+          <Button
+            onClick={onClose}
+            className="rounded-full bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90"
+          >
             Schließen
           </Button>
         </div>

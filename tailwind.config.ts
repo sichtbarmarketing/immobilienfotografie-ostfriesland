@@ -19,6 +19,17 @@ const config = {
       },
     },
     extend: {
+      fontFamily: {
+        sans: [
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "San Francisco",
+          "Segoe UI",
+          "Roboto",
+          "Helvetica Neue",
+          "sans-serif",
+        ],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -52,6 +63,17 @@ const config = {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        apple: {
+          gray: {
+            light: "#f5f5f7",
+            dark: "#1d1d1f",
+          },
+          blue: "#0071e3",
+        },
+        chart: {
+          1: "var(--chart-1)",
+          2: "var(--chart-2)",
         },
       },
       borderRadius: {
