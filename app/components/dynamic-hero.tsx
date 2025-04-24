@@ -5,6 +5,7 @@ import ParallaxSection from "./parallax-section"
 import FadeIn from "./fade-in"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import DynamicContent from "./dynamic-content"
 
 interface DynamicHeroProps {
   fallbackImageUrl?: string
@@ -44,14 +45,20 @@ export default function DynamicHero({ fallbackImageUrl = "/sleek-modern-residenc
       <div className="container mx-auto px-4 md:px-6 flex items-center justify-center h-full">
         <div className="max-w-3xl mx-auto text-center">
           <FadeIn>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight mb-6 text-white">
-              Immobilienfotografie neu definiert.
-            </h1>
+            <DynamicContent
+              contentKey="hero_title"
+              defaultValue="Immobilienfotografie neu definiert."
+              className="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight mb-6 text-white"
+              as="h1"
+            />
           </FadeIn>
           <FadeIn delay={200}>
-            <p className="text-xl md:text-2xl font-light max-w-3xl mx-auto mb-10 text-white/90">
-              Professionelle Immobilienfotografie, Videos und Virtual Homestaging in Ostfriesland.
-            </p>
+            <DynamicContent
+              contentKey="hero_subtitle"
+              defaultValue="Professionelle Immobilienfotografie, Videos und Virtual Homestaging in Ostfriesland."
+              className="text-xl md:text-2xl font-light max-w-3xl mx-auto mb-10 text-white/90"
+              as="p"
+            />
           </FadeIn>
           <FadeIn delay={400}>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

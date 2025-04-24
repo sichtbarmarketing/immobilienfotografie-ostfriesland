@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Camera } from "lucide-react"
+import { Menu, X } from "lucide-react"
+import DynamicLogo from "./dynamic-logo"
 
 export default function AppleHeader() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -26,10 +27,11 @@ export default function AppleHeader() {
     >
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex h-16 items-center justify-between">
-          <div className="flex items-center gap-2 font-medium">
-            <Camera className="h-6 w-6" />
-            <span className={isScrolled ? "" : "text-white"}>sichtbar.immo</span>
-          </div>
+          <DynamicLogo
+            className={isScrolled ? "" : "text-white"}
+            iconClassName={`h-6 w-6 ${isScrolled ? "" : "text-white"}`}
+            textClassName={isScrolled ? "" : "text-white"}
+          />
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">

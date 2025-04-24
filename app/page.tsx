@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Camera, CheckCircle, Video, PanelTop, ArrowRight } from "lucide-react"
+import { Camera, CheckCircle, Video, ArrowRight, Compass, Home } from "lucide-react"
 import SeoText from "@/app/components/seo-text"
 import { ContactForm } from "@/app/components/contact-form"
 import Footer from "@/app/components/footer"
@@ -79,7 +79,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Services Section */}
+        {/* Services Section - Reorganized as requested */}
         <section id="services" className="py-24 md:py-32 bg-black text-white">
           <div className="container mx-auto px-4 md:px-6">
             <FadeIn>
@@ -93,81 +93,116 @@ export default function LandingPage() {
               </p>
             </FadeIn>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* First row: Immobilienfotografie and Immobilienvideos */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
               <FadeIn delay={300} direction="up">
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 transition-transform duration-500 hover:translate-y-[-10px]">
+                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 transition-transform duration-500 hover:translate-y-[-10px] h-full">
                   <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
                     <Camera className="h-6 w-6 text-white" />
                   </div>
                   <h3 className="text-2xl font-medium mb-4">Immobilienfotografie</h3>
                   <p className="text-white/70 mb-6">
-                    Professionelle Fotos von Innen- und Außenaufnahmen, die Ihre Immobilie im besten Licht präsentieren.
+                    Professionelle Fotos, die Ihre Immobilie im besten Licht präsentieren. Mit modernster Ausrüstung und
+                    jahrelanger Erfahrung sorge ich für Aufnahmen, die potenzielle Käufer begeistern und zum
+                    Besichtigungstermin motivieren.
                   </p>
                   <ul className="space-y-3">
                     <li className="flex items-center gap-3">
                       <CheckCircle className="h-5 w-5 text-white/70" />
-                      <span>Hochwertige Innenaufnahmen</span>
+                      <span>Hochwertige Innenaufnahmen mit perfekter Ausleuchtung</span>
                     </li>
                     <li className="flex items-center gap-3">
                       <CheckCircle className="h-5 w-5 text-white/70" />
-                      <span>Professionelle Außenaufnahmen</span>
+                      <span>Professionelle Außenaufnahmen zu optimalen Tageszeiten</span>
                     </li>
                     <li className="flex items-center gap-3">
                       <CheckCircle className="h-5 w-5 text-white/70" />
-                      <span>Optimale Bildbearbeitung</span>
+                      <span>Detailaufnahmen für besondere Merkmale Ihrer Immobilie</span>
                     </li>
                   </ul>
                 </div>
               </FadeIn>
 
               <FadeIn delay={400} direction="up">
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 transition-transform duration-500 hover:translate-y-[-10px]">
+                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 transition-transform duration-500 hover:translate-y-[-10px] h-full">
                   <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
                     <Video className="h-6 w-6 text-white" />
                   </div>
                   <h3 className="text-2xl font-medium mb-4">Immobilienvideos</h3>
                   <p className="text-white/70 mb-6">
-                    Dynamische Videos, die Ihre Immobilie lebendig und ansprechend präsentieren. Ideal für
-                    Online-Portale.
+                    Dynamische Videos, die Ihre Immobilie lebendig präsentieren und einen authentischen Eindruck
+                    vermitteln. Professionell produzierte Immobilienvideos erhöhen nachweislich das Interesse
+                    potenzieller Käufer.
                   </p>
                   <ul className="space-y-3">
                     <li className="flex items-center gap-3">
                       <CheckCircle className="h-5 w-5 text-white/70" />
-                      <span>Professionelle Videoproduktion</span>
+                      <span>Cineastische Kameraführung mit modernster Technik</span>
                     </li>
                     <li className="flex items-center gap-3">
                       <CheckCircle className="h-5 w-5 text-white/70" />
-                      <span>360° Rundgänge</span>
+                      <span>Professioneller Schnitt und Nachbearbeitung</span>
                     </li>
                     <li className="flex items-center gap-3">
                       <CheckCircle className="h-5 w-5 text-white/70" />
-                      <span>Drohnenaufnahmen</span>
+                      <span>Auf Wunsch mit Musik und Sprechertext</span>
+                    </li>
+                  </ul>
+                </div>
+              </FadeIn>
+            </div>
+
+            {/* Second row: 360° Rundgänge and Virtual Homestaging */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <FadeIn delay={500} direction="up">
+                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 transition-transform duration-500 hover:translate-y-[-10px] h-full">
+                  <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
+                    <Compass className="h-6 w-6 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-medium mb-4">360° Rundgänge</h3>
+                  <p className="text-white/70 mb-6">
+                    Ermöglichen Sie potenziellen Käufern eine virtuelle Besichtigung Ihrer Immobilie zu jeder Zeit. 360°
+                    Rundgänge bieten ein immersives Erlebnis und reduzieren unnötige Besichtigungstermine.
+                  </p>
+                  <ul className="space-y-3">
+                    <li className="flex items-center gap-3">
+                      <CheckCircle className="h-5 w-5 text-white/70" />
+                      <span>Interaktive Begehung aller Räume</span>
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <CheckCircle className="h-5 w-5 text-white/70" />
+                      <span>Integration von Infopunkten und Grundrissen</span>
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <CheckCircle className="h-5 w-5 text-white/70" />
+                      <span>Einfache Einbindung in Ihre Website</span>
                     </li>
                   </ul>
                 </div>
               </FadeIn>
 
-              <FadeIn delay={500} direction="up">
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 transition-transform duration-500 hover:translate-y-[-10px]">
+              <FadeIn delay={600} direction="up">
+                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 transition-transform duration-500 hover:translate-y-[-10px] h-full">
                   <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
-                    <PanelTop className="h-6 w-6 text-white" />
+                    <Home className="h-6 w-6 text-white" />
                   </div>
                   <h3 className="text-2xl font-medium mb-4">Virtual Homestaging</h3>
                   <p className="text-white/70 mb-6">
-                    Mit virtueller Einrichtung leere Räume ansprechend gestalten. Zeigen Sie das volle Potenzial.
+                    Leere Räume virtuell einrichten und das volle Potenzial Ihrer Immobilie zeigen. Virtual Homestaging
+                    ist eine kostengünstige Alternative zum klassischen Home Staging mit beeindruckenden Ergebnissen.
                   </p>
                   <ul className="space-y-3">
                     <li className="flex items-center gap-3">
                       <CheckCircle className="h-5 w-5 text-white/70" />
-                      <span>Virtuelle Möblierung</span>
+                      <span>Fotorealistische virtuelle Möblierung</span>
                     </li>
                     <li className="flex items-center gap-3">
                       <CheckCircle className="h-5 w-5 text-white/70" />
-                      <span>Verschiedene Einrichtungsstile</span>
+                      <span>Verschiedene Einrichtungsstile zur Auswahl</span>
                     </li>
                     <li className="flex items-center gap-3">
                       <CheckCircle className="h-5 w-5 text-white/70" />
-                      <span>Realistische Darstellung</span>
+                      <span>Vorher-Nachher-Vergleiche für maximale Wirkung</span>
                     </li>
                   </ul>
                 </div>
