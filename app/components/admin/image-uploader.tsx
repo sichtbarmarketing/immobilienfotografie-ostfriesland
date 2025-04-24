@@ -3,16 +3,20 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { uploadImage, type UploadResult } from "../../actions/admin-actions"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { AlertCircle, CheckCircle } from "lucide-react"
 
 export default function ImageUploader() {
-  const router = useRouter()
   const [isUploading, setIsUploading] = useState(false)
-  const [result, setResult] = useState<UploadResult | null>(null)
+  const [result, setResult] = useState<{ success: boolean; message: string; url?: string } | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [category, setCategory] = useState("")
+  const [title, setTitle] = useState("")
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null
@@ -32,24 +36,66 @@ export default function ImageUploader() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+
+    // Validate form
+    if (!category) {
+      setResult({ success: false, message: "Bitte wählen Sie eine Bildkategorie aus" })
+      return
+    }
+
+    if (!selectedFile) {
+      setResult({ success: false, message: "Bitte wählen Sie ein Bild aus" })
+      return
+    }
+
     setIsUploading(true)
+    setResult(null)
 
     try {
-      const formData = new FormData(e.currentTarget)
-      const result = await uploadImage(formData)
-      setResult(result)
+      // Create form data
+      const formData = new FormData()
+      formData.append("file", selectedFile)
+      formData.append("category", category)
+      formData.append("title", title || selectedFile.name)
 
-      if (result.success) {
+      // Upload image
+      console.log("Uploading image...")
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      const result = await response.json()
+      console.log("Upload response:", result)
+
+      if (response.ok && result.success) {
+        setResult({
+          success: true,
+          message: "Bild erfolgreich hochgeladen",
+          url: result.url,
+        })
+
         // Reset form on success
-        e.currentTarget.reset()
+        setCategory("")
+        setTitle("")
         setSelectedFile(null)
         setPreviewUrl(null)
+
+        // Reset file input
+        const fileInput = document.getElementById("file") as HTMLInputElement
+        if (fileInput) fileInput.value = ""
+      } else {
+        setResult({
+          success: false,
+          message: result.message || "Fehler beim Hochladen des Bildes",
+        })
       }
     } catch (error) {
       console.error("Upload error:", error)
       setResult({
         success: false,
-        message: "Ein unerwarteter Fehler ist aufgetreten",
+        message: "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.",
       })
     } finally {
       setIsUploading(false)
@@ -58,97 +104,45 @@ export default function ImageUploader() {
 
   return (
     <div className="space-y-6">
-      {result?.message && (
-        <div
-          className={`p-4 mb-6 rounded-md ${result.success ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}
+      {result && (
+        <Alert
+          variant={result.success ? "default" : "destructive"}
+          className={`mb-6 ${result.success ? "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400" : ""}`}
         >
-          {result.message}
-        </div>
+          {result.success ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+          <AlertDescription>{result.message}</AlertDescription>
+        </Alert>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label htmlFor="category" className="text-sm font-medium">
-              Bildkategorie *
-            </label>
-            <select
-              id="category"
-              name="category"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              required
-            >
-              <option value="">Bitte auswählen</option>
-              <option value="hero">Hero Bild</option>
-              <option value="interior">Innenaufnahmen</option>
-              <option value="exterior">Außenaufnahmen</option>
-              <option value="drone">Drohnenaufnahmen</option>
-              <option value="virtual-staging">Virtual Homestaging</option>
-              <option value="about">Über uns</option>
-              <option value="intro">Intro Bereich</option>
-            </select>
+            <Label htmlFor="category">Bildkategorie *</Label>
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger>
+                <SelectValue placeholder="Bitte auswählen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="hero">Hero Bild</SelectItem>
+                <SelectItem value="interior">Innenaufnahmen</SelectItem>
+                <SelectItem value="exterior">Außenaufnahmen</SelectItem>
+                <SelectItem value="drone">Drohnenaufnahmen</SelectItem>
+                <SelectItem value="virtual-staging">Virtual Homestaging</SelectItem>
+                <SelectItem value="about">Über uns</SelectItem>
+                <SelectItem value="intro">Intro Bereich</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="section" className="text-sm font-medium">
-              Website-Bereich
-            </label>
-            <select
-              id="section"
-              name="section"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            >
-              <option value="">Automatisch (basierend auf Kategorie)</option>
-              <option value="hero">Hero Sektion</option>
-              <option value="intro">Intro Sektion</option>
-              <option value="portfolio">Portfolio Sektion</option>
-              <option value="homestaging">Virtual Homestaging Sektion</option>
-              <option value="about">Über uns Sektion</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label htmlFor="title" className="text-sm font-medium">
-              Titel
-            </label>
-            <input
-              id="title"
-              name="title"
-              type="text"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              placeholder="Titel des Bildes"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="altText" className="text-sm font-medium">
-              Alt-Text
-            </label>
-            <input
-              id="altText"
-              name="altText"
-              type="text"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              placeholder="Beschreibung für Screenreader"
-            />
+            <Label htmlFor="title">Titel</Label>
+            <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Titel des Bildes" />
           </div>
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="file" className="text-sm font-medium">
-            Bild auswählen *
-          </label>
-          <input
-            id="file"
-            name="file"
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            required
-          />
+          <Label htmlFor="file">Bild auswählen *</Label>
+          <Input id="file" type="file" accept="image/*" onChange={handleFileChange} required />
         </div>
 
         {previewUrl && (
