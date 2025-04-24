@@ -1,9 +1,6 @@
-import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Camera, CheckCircle, Video, PanelTop, ArrowRight } from "lucide-react"
-import { MapPin } from "@/app/components/map-pin"
 import SeoText from "@/app/components/seo-text"
 import { ContactForm } from "@/app/components/contact-form"
 import Footer from "@/app/components/footer"
@@ -11,6 +8,8 @@ import AppleHeader from "@/app/components/apple-header"
 import ParallaxSection from "@/app/components/parallax-section"
 import FadeIn from "@/app/components/fade-in"
 import HomestagingSection from "@/app/components/homestaging-section"
+import PortfolioSection from "@/app/components/portfolio-section"
+import DynamicImage from "@/app/components/dynamic-image"
 
 export default function LandingPage() {
   return (
@@ -28,20 +27,22 @@ export default function LandingPage() {
           <div className="container mx-auto px-4 md:px-6 flex items-center justify-center h-full">
             <div className="max-w-3xl mx-auto text-center">
               <FadeIn>
-                <h1 className="apple-heading mb-6 text-white">Immobilienfotografie neu definiert.</h1>
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight mb-6 text-white">
+                  Immobilienfotografie neu definiert.
+                </h1>
               </FadeIn>
               <FadeIn delay={200}>
-                <p className="apple-subheading mb-10 text-white/90">
+                <p className="text-xl md:text-2xl font-light max-w-3xl mx-auto mb-10 text-white/90">
                   Professionelle Immobilienfotografie, Videos und Virtual Homestaging in Ostfriesland.
                 </p>
               </FadeIn>
               <FadeIn delay={400}>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button className="apple-button bg-white text-black hover:bg-white/90" size="lg" asChild>
+                  <Button className="rounded-full bg-white text-black hover:bg-white/90" size="lg" asChild>
                     <Link href="#portfolio">Portfolio entdecken</Link>
                   </Button>
                   <Button
-                    className="apple-button bg-white/20 text-white backdrop-blur-md hover:bg-white/30"
+                    className="rounded-full bg-white/20 text-white backdrop-blur-md hover:bg-white/30"
                     size="lg"
                     variant="outline"
                     asChild
@@ -55,13 +56,15 @@ export default function LandingPage() {
         </ParallaxSection>
 
         {/* Intro Section */}
-        <section className="apple-section bg-apple-gray-light">
+        <section className="py-24 md:py-32 bg-apple-gray-light">
           <div className="container mx-auto px-4 md:px-6">
             <FadeIn>
-              <h2 className="apple-heading text-center mb-6 gradient-text">Immobilienfotografie in Ostfriesland.</h2>
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight text-center mb-6 gradient-text">
+                Immobilienfotografie in Ostfriesland.
+              </h2>
             </FadeIn>
             <FadeIn delay={200}>
-              <p className="apple-subheading text-center text-muted-foreground mb-16">
+              <p className="text-xl md:text-2xl font-light max-w-3xl mx-auto text-center text-muted-foreground mb-16">
                 Als professioneller Immobilienfotograf biete ich hochwertige visuelle Lösungen für die erfolgreiche
                 Vermarktung Ihrer Immobilie.
               </p>
@@ -69,35 +72,41 @@ export default function LandingPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <FadeIn delay={300} direction="up">
-                <div className="apple-card overflow-hidden rounded-2xl">
-                  <Image
-                    src="/sun-drenched-loft.png"
+                <div className="overflow-hidden rounded-2xl">
+                  <DynamicImage
+                    category="interior"
+                    index={0}
                     alt="Wohnzimmer mit natürlichem Licht"
+                    className="aspect-[4/3] transition-transform duration-700 hover:scale-105"
                     width={600}
                     height={450}
-                    className="w-full h-auto object-cover aspect-[4/3] transition-transform duration-700 hover:scale-105"
+                    fallbackSrc="/sun-drenched-loft.png"
                   />
                 </div>
               </FadeIn>
               <FadeIn delay={400} direction="up">
-                <div className="apple-card overflow-hidden rounded-2xl">
-                  <Image
-                    src="/sleek-minimalist-kitchen.png"
+                <div className="overflow-hidden rounded-2xl">
+                  <DynamicImage
+                    category="interior"
+                    index={1}
                     alt="Moderne Küche"
+                    className="aspect-[4/3] transition-transform duration-700 hover:scale-105"
                     width={600}
                     height={450}
-                    className="w-full h-auto object-cover aspect-[4/3] transition-transform duration-700 hover:scale-105"
+                    fallbackSrc="/sleek-minimalist-kitchen.png"
                   />
                 </div>
               </FadeIn>
               <FadeIn delay={500} direction="up">
-                <div className="apple-card overflow-hidden rounded-2xl">
-                  <Image
-                    src="/serene-spa-retreat.png"
+                <div className="overflow-hidden rounded-2xl">
+                  <DynamicImage
+                    category="interior"
+                    index={2}
                     alt="Luxuriöses Badezimmer"
+                    className="aspect-[4/3] transition-transform duration-700 hover:scale-105"
                     width={600}
                     height={450}
-                    className="w-full h-auto object-cover aspect-[4/3] transition-transform duration-700 hover:scale-105"
+                    fallbackSrc="/serene-spa-retreat.png"
                   />
                 </div>
               </FadeIn>
@@ -105,14 +114,16 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Dark Mode Section - Services */}
-        <section id="services" className="apple-section bg-black text-white">
+        {/* Services Section */}
+        <section id="services" className="py-24 md:py-32 bg-black text-white">
           <div className="container mx-auto px-4 md:px-6">
             <FadeIn>
-              <h2 className="apple-heading text-center mb-6">Dienstleistungen im Überblick</h2>
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight text-center mb-6">
+                Dienstleistungen im Überblick
+              </h2>
             </FadeIn>
             <FadeIn delay={200}>
-              <p className="apple-subheading text-center text-white/70 mb-16">
+              <p className="text-xl md:text-2xl font-light max-w-3xl mx-auto text-center text-white/70 mb-16">
                 Professionelle visuelle Lösungen für Immobilienmakler und private Anbieter.
               </p>
             </FadeIn>
@@ -200,148 +211,14 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Regional Coverage Section */}
-        <section className="apple-section bg-apple-gray-light">
-          <div className="container mx-auto px-4 md:px-6">
-            <FadeIn>
-              <h2 className="apple-heading text-center mb-6 gradient-text">Immobilienfotograf für ganz Ostfriesland</h2>
-            </FadeIn>
-            <FadeIn delay={200}>
-              <p className="apple-subheading text-center text-muted-foreground mb-16">
-                Als Ihr Immobilienfotograf bin ich in ganz Ostfriesland für Sie im Einsatz.
-              </p>
-            </FadeIn>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 max-w-4xl mx-auto">
-              {[
-                { city: "Leer", desc: "und Umgebung" },
-                { city: "Emden", desc: "und Umgebung" },
-                { city: "Aurich", desc: "und Umgebung" },
-                { city: "Norden", desc: "und Umgebung" },
-                { city: "Wittmund", desc: "und Umgebung" },
-              ].map((location, index) => (
-                <FadeIn key={location.city} delay={300 + index * 100} direction="up">
-                  <div className="bg-white rounded-2xl shadow-sm p-6 text-center transition-transform duration-500 hover:translate-y-[-10px]">
-                    <MapPin className="h-8 w-8 text-black mx-auto mb-3" />
-                    <h3 className="font-medium text-lg">{location.city}</h3>
-                    <p className="text-sm text-muted-foreground">{location.desc}</p>
-                  </div>
-                </FadeIn>
-              ))}
-            </div>
-
-            <FadeIn delay={800}>
-              <p className="text-center text-muted-foreground mt-12 max-w-2xl mx-auto">
-                Auch in anderen Orten Ostfrieslands bin ich gerne für Sie tätig. Kontaktieren Sie mich für Ihre
-                individuelle Anfrage.
-              </p>
-            </FadeIn>
-          </div>
-        </section>
-
-        {/* Portfolio Section with Parallax */}
-        <ParallaxSection
-          imageUrl="/modern-suburban-home.png"
-          overlayOpacity={0.7}
-          darkMode={true}
-          className="apple-section"
-        >
-          <div id="portfolio" className="container mx-auto px-4 md:px-6">
-            <FadeIn>
-              <h2 className="apple-heading text-center mb-6 text-white">Portfolio</h2>
-            </FadeIn>
-            <FadeIn delay={200}>
-              <p className="apple-subheading text-center text-white/70 mb-16">
-                Entdecken Sie eine Auswahl meiner Arbeiten im Bereich Immobilienfotografie
-              </p>
-            </FadeIn>
-
-            <Tabs defaultValue="innen" className="w-full">
-              <div className="flex justify-center mb-8">
-                <TabsList className="bg-white/10 backdrop-blur-md">
-                  <TabsTrigger
-                    value="innen"
-                    className="text-white data-[state=active]:bg-white data-[state=active]:text-black"
-                  >
-                    Innenaufnahmen
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="aussen"
-                    className="text-white data-[state=active]:bg-white data-[state=active]:text-black"
-                  >
-                    Außenaufnahmen
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="drohne"
-                    className="text-white data-[state=active]:bg-white data-[state=active]:text-black"
-                  >
-                    Drohnenaufnahmen
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-
-              <TabsContent value="innen" className="mt-0">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {Array.from({ length: 6 }).map((_, index) => (
-                    <FadeIn key={`interior-${index}`} delay={300 + index * 50} direction="up">
-                      <div className="apple-card overflow-hidden rounded-2xl">
-                        <Image
-                          src={`/cozy-reading-nook.png`}
-                          alt={`Innenaufnahme ${index + 1}`}
-                          width={600}
-                          height={400}
-                          className="w-full h-auto object-cover aspect-[4/3] transition-transform duration-700 hover:scale-105"
-                        />
-                      </div>
-                    </FadeIn>
-                  ))}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="aussen" className="mt-0">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {Array.from({ length: 6 }).map((_, index) => (
-                    <FadeIn key={`exterior-${index}`} delay={300 + index * 50} direction="up">
-                      <div className="apple-card overflow-hidden rounded-2xl">
-                        <Image
-                          src={`/modern-suburban-home.png`}
-                          alt={`Außenaufnahme ${index + 1}`}
-                          width={600}
-                          height={400}
-                          className="w-full h-auto object-cover aspect-[4/3] transition-transform duration-700 hover:scale-105"
-                        />
-                      </div>
-                    </FadeIn>
-                  ))}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="drohne" className="mt-0">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {Array.from({ length: 6 }).map((_, index) => (
-                    <FadeIn key={`drone-${index}`} delay={300 + index * 50} direction="up">
-                      <div className="apple-card overflow-hidden rounded-2xl">
-                        <Image
-                          src={`/suburban-aerial-view.png`}
-                          alt={`Drohnenaufnahme ${index + 1}`}
-                          width={600}
-                          height={400}
-                          className="w-full h-auto object-cover aspect-[4/3] transition-transform duration-700 hover:scale-105"
-                        />
-                      </div>
-                    </FadeIn>
-                  ))}
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </ParallaxSection>
+        {/* Portfolio Section */}
+        <PortfolioSection />
 
         {/* Virtual Homestaging Section */}
         <HomestagingSection />
 
-        {/* About Section - Dark Mode */}
-        <section id="about" className="apple-section bg-black text-white">
+        {/* About Section */}
+        <section id="about" className="py-24 md:py-32 bg-black text-white">
           <div className="container mx-auto px-4 md:px-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
               <div>
@@ -391,7 +268,7 @@ export default function LandingPage() {
                 </div>
 
                 <FadeIn delay={800}>
-                  <Button className="apple-button bg-white text-black hover:bg-white/90 group" asChild>
+                  <Button className="rounded-full bg-white text-black hover:bg-white/90 group" asChild>
                     <Link href="#contact">
                       Kontakt aufnehmen
                       <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -400,13 +277,15 @@ export default function LandingPage() {
                 </FadeIn>
               </div>
               <FadeIn direction="right">
-                <div className="apple-card overflow-hidden rounded-2xl">
-                  <Image
-                    src="/focused-portraitist.png"
+                <div className="overflow-hidden rounded-2xl">
+                  <DynamicImage
+                    category="about"
+                    index={0}
                     alt="Immobilienfotograf"
+                    className="transition-transform duration-700 hover:scale-105"
                     width={600}
                     height={600}
-                    className="w-full h-auto object-cover transition-transform duration-700 hover:scale-105"
+                    fallbackSrc="/focused-portraitist.png"
                   />
                 </div>
               </FadeIn>
@@ -415,13 +294,15 @@ export default function LandingPage() {
         </section>
 
         {/* Contact Section */}
-        <section id="contact" className="apple-section bg-apple-gray-light">
+        <section id="contact" className="py-24 md:py-32 bg-apple-gray-light">
           <div className="container mx-auto px-4 md:px-6">
             <FadeIn>
-              <h2 className="apple-heading text-center mb-6 gradient-text">Jetzt unverbindlich anfragen</h2>
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight text-center mb-6 gradient-text">
+                Jetzt unverbindlich anfragen
+              </h2>
             </FadeIn>
             <FadeIn delay={200}>
-              <p className="apple-subheading text-center text-muted-foreground mb-16">
+              <p className="text-xl md:text-2xl font-light max-w-3xl mx-auto text-center text-muted-foreground mb-16">
                 Füllen Sie das Formular aus und ich melde mich zeitnah bei Ihnen zurück
               </p>
             </FadeIn>

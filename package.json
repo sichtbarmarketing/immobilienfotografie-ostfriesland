@@ -60,12 +60,8 @@
     "zod": "^3.24.1",
     "@auth/core": "latest",
     "nodemailer": "latest",
-    "@dnd-kit/core": "latest",
     "@vercel/blob": "latest",
     "next-auth": "latest",
-    "@dnd-kit/sortable": "latest",
-    "@dnd-kit/utilities": "latest",
-    "@dnd-kit/modifiers": "latest",
     "@supabase/supabase-js": "latest"
   },
   "devDependencies": {

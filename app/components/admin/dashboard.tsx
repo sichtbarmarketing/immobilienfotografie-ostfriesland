@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle, CheckCircle } from "lucide-react"
+import ImageManager from "./image-manager"
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -23,6 +24,7 @@ export default function AdminDashboard() {
   const [title, setTitle] = useState("")
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [refreshImages, setRefreshImages] = useState(0)
 
   const handleLogout = async () => {
     try {
@@ -112,6 +114,9 @@ export default function AdminDashboard() {
         // Reset file input
         const fileInput = document.getElementById("file") as HTMLInputElement
         if (fileInput) fileInput.value = ""
+
+        // Trigger refresh of image manager
+        setRefreshImages((prev) => prev + 1)
       } else {
         setUploadResult({
           success: false,
@@ -235,7 +240,7 @@ export default function AdminDashboard() {
               <CardDescription>Verwalten Sie die hochgeladenen Bilder</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Keine Bilder vorhanden. Laden Sie zuerst Bilder hoch.</p>
+              <ImageManager key={refreshImages} />
             </CardContent>
           </Card>
         </TabsContent>
