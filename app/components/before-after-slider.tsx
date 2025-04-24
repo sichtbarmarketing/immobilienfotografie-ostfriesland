@@ -65,7 +65,11 @@ export default function BeforeAfterSlider({
   }, [isDragging])
 
   return (
-    <div ref={containerRef} className={`relative overflow-hidden rounded-2xl ${className}`} style={{ height: "500px" }}>
+    <div
+      ref={containerRef}
+      className={`relative overflow-hidden rounded-2xl max-w-full ${className}`}
+      style={{ height: "500px" }}
+    >
       {/* After Image (Full) */}
       <div className="absolute inset-0 w-full h-full">
         <img src={afterImage || "/placeholder.svg"} alt={afterAlt} className="object-cover w-full h-full" />

@@ -32,10 +32,8 @@ export default function HomestagingSection() {
     <section id="homestaging" className="py-24 md:py-32 bg-apple-gray-light">
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-          <FadeIn direction="left">
-            <BeforeAfterSlider beforeImage={beforeImage} afterImage={afterImage} className="w-full shadow-lg" />
-          </FadeIn>
-          <div>
+          {/* Text content - now first on mobile */}
+          <div className="order-1 md:order-2">
             <FadeIn>
               <h2 className="text-3xl md:text-4xl font-medium tracking-tight mb-6 gradient-text">
                 Virtuelles Homestaging
@@ -101,6 +99,11 @@ export default function HomestagingSection() {
               </FadeIn>
             </div>
           </div>
+
+          {/* Before/After slider - now second on mobile */}
+          <FadeIn direction="left" className="order-2 md:order-1">
+            <BeforeAfterSlider beforeImage={beforeImage} afterImage={afterImage} className="w-full shadow-lg" />
+          </FadeIn>
         </div>
       </div>
     </section>

@@ -16,23 +16,23 @@ export default function PortfolioSection() {
         </FadeIn>
 
         <Tabs defaultValue="interior" className="w-full">
-          <div className="flex justify-center mb-8">
-            <TabsList className="bg-white/10 backdrop-blur-md">
+          <div className="flex justify-center mb-8 overflow-x-auto pb-2">
+            <TabsList className="bg-white/10 backdrop-blur-md flex-nowrap">
               <TabsTrigger
                 value="interior"
-                className="text-white data-[state=active]:bg-white data-[state=active]:text-black"
+                className="text-white data-[state=active]:bg-white data-[state=active]:text-black whitespace-nowrap"
               >
                 Innenaufnahmen
               </TabsTrigger>
               <TabsTrigger
                 value="exterior"
-                className="text-white data-[state=active]:bg-white data-[state=active]:text-black"
+                className="text-white data-[state=active]:bg-white data-[state=active]:text-black whitespace-nowrap"
               >
                 Außenaufnahmen
               </TabsTrigger>
               <TabsTrigger
                 value="drone"
-                className="text-white data-[state=active]:bg-white data-[state=active]:text-black"
+                className="text-white data-[state=active]:bg-white data-[state=active]:text-black whitespace-nowrap"
               >
                 Drohnenaufnahmen
               </TabsTrigger>

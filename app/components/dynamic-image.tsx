@@ -47,13 +47,13 @@ export default function DynamicImage({
   }, [category, index])
 
   return (
-    <div className={`relative ${loading ? "animate-pulse bg-muted" : ""} ${className}`}>
+    <div className={`relative max-w-full ${loading ? "animate-pulse bg-muted" : ""} ${className}`}>
       <Image
         src={imageSrc || "/placeholder.svg"}
         alt={alt}
         width={width}
         height={height}
-        className={`w-full h-auto object-cover ${className}`}
+        className={`w-full h-auto object-cover max-w-full ${className}`}
         onError={() => setImageSrc(fallbackSrc)}
       />
     </div>
