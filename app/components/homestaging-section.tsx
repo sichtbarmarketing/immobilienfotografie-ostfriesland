@@ -29,9 +29,9 @@ export default function HomestagingSection() {
   }, [])
 
   return (
-    <section id="homestaging" className="py-24 md:py-32 bg-apple-gray-light">
+    <section id="homestaging" className="py-16 md:py-32 bg-apple-gray-light overflow-hidden">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center">
           {/* Text content - now first on mobile */}
           <div className="order-1 md:order-2">
             <FadeIn>
@@ -101,8 +101,10 @@ export default function HomestagingSection() {
           </div>
 
           {/* Before/After slider - now second on mobile */}
-          <FadeIn direction="left" className="order-2 md:order-1">
-            <BeforeAfterSlider beforeImage={beforeImage} afterImage={afterImage} className="w-full shadow-lg" />
+          <FadeIn direction="left" className="order-2 md:order-1 w-full">
+            <div className="w-full px-0">
+              <BeforeAfterSlider beforeImage={beforeImage} afterImage={afterImage} className="w-full shadow-lg" />
+            </div>
           </FadeIn>
         </div>
       </div>

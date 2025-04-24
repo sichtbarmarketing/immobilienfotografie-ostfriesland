@@ -67,8 +67,8 @@ export default function BeforeAfterSlider({
   return (
     <div
       ref={containerRef}
-      className={`relative overflow-hidden rounded-2xl max-w-full ${className}`}
-      style={{ height: "500px" }}
+      className={`relative overflow-hidden rounded-2xl w-full max-w-full ${className}`}
+      style={{ height: "auto", aspectRatio: "4/3" }}
     >
       {/* After Image (Full) */}
       <div className="absolute inset-0 w-full h-full">
@@ -80,8 +80,8 @@ export default function BeforeAfterSlider({
         <img
           src={beforeImage || "/placeholder.svg"}
           alt={beforeAlt}
-          className="object-cover h-full"
-          style={{ width: `${100 / (sliderPosition / 100)}%`, maxWidth: "none" }}
+          className="object-cover h-full w-full"
+          style={{ maxWidth: "none", width: `${100 / (sliderPosition / 100)}%` }}
         />
       </div>
 
