@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Trash2, RefreshCw } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { AlertCircle, CheckCircle } from "lucide-react"
 
 type ImageRecord = {
   id: string
@@ -22,11 +24,14 @@ export default function ImageManager() {
   const [images, setImages] = useState<ImageRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [deleteResult, setDeleteResult] = useState<{ success: boolean; message: string } | null>(null)
+  const [isDeleting, setIsDeleting] = useState<string | null>(null)
 
   // Load images
   const loadImages = async () => {
     setLoading(true)
     setError(null)
+    setDeleteResult(null)
 
     try {
       const response = await fetch(`/api/images?category=${activeCategory}`)
@@ -47,6 +52,50 @@ export default function ImageManager() {
     }
   }
 
+  // Delete an image
+  const handleDelete = async (id: string) => {
+    if (!confirm("Sind Sie sicher, dass Sie dieses Bild löschen möchten?")) {
+      return
+    }
+
+    setIsDeleting(id)
+    setDeleteResult(null)
+
+    try {
+      const response = await fetch("/api/images/delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        setDeleteResult({
+          success: true,
+          message: "Bild erfolgreich gelöscht",
+        })
+        // Remove the deleted image from the state
+        setImages(images.filter((image) => image.id !== id))
+      } else {
+        setDeleteResult({
+          success: false,
+          message: data.message || "Fehler beim Löschen des Bildes",
+        })
+      }
+    } catch (error) {
+      console.error("Delete error:", error)
+      setDeleteResult({
+        success: false,
+        message: "Ein unerwarteter Fehler ist aufgetreten",
+      })
+    } finally {
+      setIsDeleting(null)
+    }
+  }
+
   // Load images when the component mounts or the category changes
   useEffect(() => {
     loadImages()
@@ -54,6 +103,18 @@ export default function ImageManager() {
 
   return (
     <div className="space-y-6">
+      {deleteResult && (
+        <Alert
+          variant={deleteResult.success ? "default" : "destructive"}
+          className={`mb-6 ${
+            deleteResult.success ? "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400" : ""
+          }`}
+        >
+          {deleteResult.success ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+          <AlertDescription>{deleteResult.message}</AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex justify-between items-center">
         <Tabs defaultValue={activeCategory} onValueChange={setActiveCategory} className="w-full">
           <TabsList className="grid grid-cols-6 mb-8">
@@ -105,8 +166,17 @@ export default function ImageManager() {
                     <h4 className="font-medium">{image.title}</h4>
                     <p className="text-sm text-muted-foreground">Kategorie: {image.category}</p>
                   </div>
-                  <Button variant="outline" size="icon" onClick={() => {}}>
-                    <Trash2 className="h-4 w-4" />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleDelete(image.id)}
+                    disabled={isDeleting === image.id}
+                  >
+                    {isDeleting === image.id ? (
+                      <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-current"></div>
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
                   </Button>
                 </div>
               </CardContent>

@@ -5,11 +5,11 @@ import SeoText from "@/app/components/seo-text"
 import { ContactForm } from "@/app/components/contact-form"
 import Footer from "@/app/components/footer"
 import AppleHeader from "@/app/components/apple-header"
-import ParallaxSection from "@/app/components/parallax-section"
 import FadeIn from "@/app/components/fade-in"
 import HomestagingSection from "@/app/components/homestaging-section"
 import PortfolioSection from "@/app/components/portfolio-section"
 import DynamicImage from "@/app/components/dynamic-image"
+import DynamicHero from "@/app/components/dynamic-hero"
 
 export default function LandingPage() {
   return (
@@ -18,42 +18,7 @@ export default function LandingPage() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <ParallaxSection
-          imageUrl="/sleek-modern-residence.png"
-          overlayOpacity={0.4}
-          darkMode={true}
-          className="h-screen flex items-center justify-center"
-        >
-          <div className="container mx-auto px-4 md:px-6 flex items-center justify-center h-full">
-            <div className="max-w-3xl mx-auto text-center">
-              <FadeIn>
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight mb-6 text-white">
-                  Immobilienfotografie neu definiert.
-                </h1>
-              </FadeIn>
-              <FadeIn delay={200}>
-                <p className="text-xl md:text-2xl font-light max-w-3xl mx-auto mb-10 text-white/90">
-                  Professionelle Immobilienfotografie, Videos und Virtual Homestaging in Ostfriesland.
-                </p>
-              </FadeIn>
-              <FadeIn delay={400}>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button className="rounded-full bg-white text-black hover:bg-white/90" size="lg" asChild>
-                    <Link href="#portfolio">Portfolio entdecken</Link>
-                  </Button>
-                  <Button
-                    className="rounded-full bg-white/20 text-white backdrop-blur-md hover:bg-white/30"
-                    size="lg"
-                    variant="outline"
-                    asChild
-                  >
-                    <Link href="#contact">Kontakt aufnehmen</Link>
-                  </Button>
-                </div>
-              </FadeIn>
-            </div>
-          </div>
-        </ParallaxSection>
+        <DynamicHero fallbackImageUrl="/sleek-modern-residence.png" />
 
         {/* Intro Section */}
         <section className="py-24 md:py-32 bg-apple-gray-light">

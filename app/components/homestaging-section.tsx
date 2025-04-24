@@ -1,18 +1,39 @@
+"use client"
+
 import { CheckCircle } from "lucide-react"
 import FadeIn from "./fade-in"
 import BeforeAfterSlider from "./before-after-slider"
+import { useEffect, useState } from "react"
 
 export default function HomestagingSection() {
+  const [beforeImage, setBeforeImage] = useState("/virtual-staging-before.png")
+  const [afterImage, setAfterImage] = useState("/virtual-staging-after.png")
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      try {
+        const response = await fetch("/api/images?category=virtual-staging")
+        const data = await response.json()
+
+        if (response.ok && data.success && data.images.length >= 2) {
+          // Assuming the first two images are before and after
+          setBeforeImage(data.images[0].url)
+          setAfterImage(data.images[1].url)
+        }
+      } catch (error) {
+        console.error("Error fetching homestaging images:", error)
+      }
+    }
+
+    fetchImages()
+  }, [])
+
   return (
-    <section id="homestaging" className="apple-section bg-apple-gray-light">
+    <section id="homestaging" className="py-24 md:py-32 bg-apple-gray-light">
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
           <FadeIn direction="left">
-            <BeforeAfterSlider
-              beforeImage="/virtual-staging-before.png"
-              afterImage="/virtual-staging-after.png"
-              className="w-full shadow-lg"
-            />
+            <BeforeAfterSlider beforeImage={beforeImage} afterImage={afterImage} className="w-full shadow-lg" />
           </FadeIn>
           <div>
             <FadeIn>
