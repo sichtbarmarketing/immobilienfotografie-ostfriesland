@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server"
 import { list } from "@vercel/blob"
 
+// Force dynamic rendering to avoid static generation issues
+export const dynamic = "force-dynamic"
+
 export async function GET(request: Request) {
   try {
     // Get the category from the query string
-    const { searchParams } = new URL(request.url)
-    const category = searchParams.get("category")
+    const url = new URL(request.url)
+    const category = url.searchParams.get("category")
 
     // List all blobs with the prefix "images/"
     const blobs = await list({ prefix: "images/" })

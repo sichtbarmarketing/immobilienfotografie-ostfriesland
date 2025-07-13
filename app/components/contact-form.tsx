@@ -1,14 +1,22 @@
 "use client"
 
-import { useActionState } from "react"
+import { useState, useTransition } from "react"
 import { Button } from "@/components/ui/button"
 import { submitContactForm, type ContactFormState } from "@/app/actions/contact-form"
 
 export function ContactForm() {
-  const [state, action, isPending] = useActionState<ContactFormState, FormData>(submitContactForm, {})
+  const [state, setState] = useState<ContactFormState>({})
+  const [isPending, startTransition] = useTransition()
+
+  const handleSubmit = async (formData: FormData) => {
+    startTransition(async () => {
+      const result = await submitContactForm({}, formData)
+      setState(result)
+    })
+  }
 
   return (
-    <form className="space-y-8" action={action}>
+    <form className="space-y-8" action={handleSubmit}>
       {state?.message && (
         <div
           className={`p-6 rounded-xl ${

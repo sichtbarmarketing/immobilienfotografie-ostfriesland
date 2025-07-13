@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server"
 
+// Force dynamic rendering
+export const dynamic = "force-dynamic"
+
 // Static fallback content for when database is not available
 const fallbackContent = [
   {

@@ -2,6 +2,9 @@ import { NextResponse } from "next/server"
 import { put } from "@vercel/blob"
 import { revalidatePath } from "next/cache"
 
+// Force dynamic rendering
+export const dynamic = "force-dynamic"
+
 // Static fallback settings
 const fallbackSettings = [
   {
