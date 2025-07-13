@@ -50,6 +50,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: "Nur Bilddateien sind erlaubt" }, { status: 400 })
     }
 
+    // Validate file size (10MB limit)
+    const maxSize = 10 * 1024 * 1024 // 10MB in bytes
+    if (file.size > maxSize) {
+      return NextResponse.json({ success: false, message: "Datei ist zu groß (max. 10MB)" }, { status: 400 })
+    }
+
     // Get file extension
     const fileExtension = file.name.split(".").pop() || "jpg"
 
@@ -98,13 +104,4 @@ export async function POST(request: Request) {
       { status: 500 },
     )
   }
-}
-
-// Increase the limit for the request body size
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: "10mb",
-    },
-  },
 }
