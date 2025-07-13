@@ -1,7 +1,20 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@supabase/supabase-js"
 import { put } from "@vercel/blob"
 import { revalidatePath } from "next/cache"
+
+// Static fallback settings
+const fallbackSettings = [
+  {
+    id: 1,
+    key: "site_name",
+    value: "sichtbar.immo",
+  },
+  {
+    id: 2,
+    key: "logo_url",
+    value: "/logo.svg",
+  },
+]
 
 // Create a Supabase client with better error handling
 function createSupabaseClient() {
@@ -10,12 +23,14 @@ function createSupabaseClient() {
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
     if (!supabaseUrl || !supabaseAnonKey) {
-      throw new Error("Supabase credentials not configured")
+      console.warn("Supabase credentials not configured, using fallback settings")
+      return null
     }
 
+    const { createClient } = require("@supabase/supabase-js")
     return createClient(supabaseUrl, supabaseAnonKey)
   } catch (error) {
-    console.error("Error creating Supabase client:", error)
+    console.warn("Error creating Supabase client:", error)
     return null
   }
 }
@@ -25,35 +40,45 @@ export async function GET() {
     const supabase = createSupabaseClient()
 
     if (!supabase) {
+      console.log("Using fallback settings due to missing Supabase configuration")
       return NextResponse.json({
-        success: false,
-        message: "Database not available",
-        settings: [],
+        success: true,
+        settings: fallbackSettings,
+        source: "fallback",
       })
     }
 
-    // Fetch all settings
+    // Try to fetch settings from database
     const { data, error } = await supabase.from("site_settings").select("*")
 
     if (error) {
-      console.error("Error fetching settings:", error)
+      console.warn("Error fetching settings from database:", error.message)
+      console.log("Using fallback settings due to database error")
       return NextResponse.json({
-        success: false,
-        message: "Error fetching settings: " + error.message,
-        settings: [],
+        success: true,
+        settings: fallbackSettings,
+        source: "fallback",
+        note: "Database unavailable, using default settings",
       })
     }
 
+    // If we have data, use it; otherwise use fallback
+    const settings = data && data.length > 0 ? data : fallbackSettings
+
     return NextResponse.json({
       success: true,
-      settings: data || [],
+      settings: settings,
+      source: data && data.length > 0 ? "database" : "fallback",
     })
   } catch (error) {
-    console.error("Unexpected error:", error)
+    console.error("Unexpected error in settings API:", error)
+
+    // Always return valid JSON, even on error
     return NextResponse.json({
-      success: false,
-      message: "An unexpected error occurred",
-      settings: [],
+      success: true,
+      settings: fallbackSettings,
+      source: "fallback",
+      error: "Unexpected error occurred, using default settings",
     })
   }
 }
@@ -66,9 +91,9 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: "Database not available",
+          message: "Database not available - settings cannot be updated",
         },
-        { status: 500 },
+        { status: 503 },
       )
     }
 

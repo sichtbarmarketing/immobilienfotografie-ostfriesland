@@ -72,8 +72,8 @@ const config = {
           blue: "#0071e3",
         },
         chart: {
-          1: "var(--chart-1)",
-          2: "var(--chart-2)",
+          1: "hsl(var(--chart-1))",
+          2: "hsl(var(--chart-2))",
         },
       },
       borderRadius: {

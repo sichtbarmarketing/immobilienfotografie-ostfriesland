@@ -19,16 +19,21 @@ export default function DynamicLogo({ className = "", iconClassName = "h-8 w-aut
         setLoading(true)
         setError(null)
 
-        // Try to fetch logo from API instead of direct Supabase call
         const response = await fetch("/api/admin/settings")
 
+        // Check if response is ok and content-type is JSON
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`)
         }
 
+        const contentType = response.headers.get("content-type")
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("Response is not JSON")
+        }
+
         const data = await response.json()
 
-        if (data.success && data.settings) {
+        if (data.success && data.settings && Array.isArray(data.settings)) {
           const logoSetting = data.settings.find((s: any) => s.key === "logo_url")
           if (logoSetting && logoSetting.value) {
             setLogoUrl(logoSetting.value)
