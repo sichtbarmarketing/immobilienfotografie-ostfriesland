@@ -18,21 +18,39 @@ export type SiteSettings = {
   value: string
 }
 
+// Helper function to create Supabase client safely
+function createSupabaseClient() {
+  try {
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.warn("Supabase credentials not available")
+      return null
+    }
+    return createClient(supabaseUrl, supabaseAnonKey)
+  } catch (error) {
+    console.error("Error creating Supabase client:", error)
+    return null
+  }
+}
+
 // Get content by key
 export async function getContent(key: string): Promise<string> {
   try {
-    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    const supabase = createSupabaseClient()
+    if (!supabase) {
+      console.warn(`Cannot fetch content for key ${key}: Supabase not available`)
+      return ""
+    }
 
     const { data, error } = await supabase.from("site_content").select("content").eq("key", key).single()
 
     if (error) {
-      console.error(`Error fetching content for key ${key}:`, error)
+      console.warn(`Content not found for key ${key}:`, error.message)
       return ""
     }
 
     return data?.content || ""
   } catch (error) {
-    console.error(`Error in getContent for key ${key}:`, error)
+    console.warn(`Error fetching content for key ${key}:`, error)
     return ""
   }
 }
@@ -40,25 +58,36 @@ export async function getContent(key: string): Promise<string> {
 // Get all content
 export async function getAllContent(): Promise<Record<string, string>> {
   try {
-    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    const supabase = createSupabaseClient()
+    if (!supabase) {
+      console.warn("Cannot fetch content: Supabase not available")
+      return {}
+    }
 
     const { data, error } = await supabase.from("site_content").select("key, content")
 
     if (error) {
-      console.error("Error fetching all content:", error)
+      console.warn("Error fetching all content:", error.message)
+      return {}
+    }
+
+    if (!data || !Array.isArray(data)) {
+      console.warn("Invalid content data received")
       return {}
     }
 
     // Convert array to object with key-value pairs
     return data.reduce(
       (acc, item) => {
-        acc[item.key] = item.content
+        if (item && item.key && typeof item.content === "string") {
+          acc[item.key] = item.content
+        }
         return acc
       },
       {} as Record<string, string>,
     )
   } catch (error) {
-    console.error("Error in getAllContent:", error)
+    console.warn("Error in getAllContent:", error)
     return {}
   }
 }
@@ -66,18 +95,22 @@ export async function getAllContent(): Promise<Record<string, string>> {
 // Get setting by key
 export async function getSetting(key: string): Promise<string> {
   try {
-    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    const supabase = createSupabaseClient()
+    if (!supabase) {
+      console.warn(`Cannot fetch setting for key ${key}: Supabase not available`)
+      return ""
+    }
 
     const { data, error } = await supabase.from("site_settings").select("value").eq("key", key).single()
 
     if (error) {
-      console.error(`Error fetching setting for key ${key}:`, error)
+      console.warn(`Setting not found for key ${key}:`, error.message)
       return ""
     }
 
     return data?.value || ""
   } catch (error) {
-    console.error(`Error in getSetting for key ${key}:`, error)
+    console.warn(`Error fetching setting for key ${key}:`, error)
     return ""
   }
 }
@@ -85,25 +118,36 @@ export async function getSetting(key: string): Promise<string> {
 // Get all settings
 export async function getAllSettings(): Promise<Record<string, string>> {
   try {
-    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    const supabase = createSupabaseClient()
+    if (!supabase) {
+      console.warn("Cannot fetch settings: Supabase not available")
+      return {}
+    }
 
     const { data, error } = await supabase.from("site_settings").select("key, value")
 
     if (error) {
-      console.error("Error fetching all settings:", error)
+      console.warn("Error fetching all settings:", error.message)
+      return {}
+    }
+
+    if (!data || !Array.isArray(data)) {
+      console.warn("Invalid settings data received")
       return {}
     }
 
     // Convert array to object with key-value pairs
     return data.reduce(
       (acc, item) => {
-        acc[item.key] = item.value
+        if (item && item.key && typeof item.value === "string") {
+          acc[item.key] = item.value
+        }
         return acc
       },
       {} as Record<string, string>,
     )
   } catch (error) {
-    console.error("Error in getAllSettings:", error)
+    console.warn("Error in getAllSettings:", error)
     return {}
   }
 }

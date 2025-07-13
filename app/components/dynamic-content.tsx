@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { getContent } from "@/app/lib/content"
 import type { JSX } from "react"
 
 interface DynamicContentProps {
@@ -23,12 +22,26 @@ export default function DynamicContent({
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const fetchedContent = await getContent(contentKey)
-        if (fetchedContent) {
-          setContent(fetchedContent)
+        setLoading(true)
+
+        // Try to fetch content from API instead of direct function call
+        const response = await fetch("/api/admin/content")
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        }
+
+        const data = await response.json()
+
+        if (data.success && data.content) {
+          const contentItem = data.content.find((item: any) => item.key === contentKey)
+          if (contentItem && contentItem.content) {
+            setContent(contentItem.content)
+          }
         }
       } catch (error) {
-        console.error(`Error fetching content for key ${contentKey}:`, error)
+        console.warn(`Error fetching content for key ${contentKey}:`, error)
+        // Keep using default value
       } finally {
         setLoading(false)
       }
@@ -36,10 +49,6 @@ export default function DynamicContent({
 
     fetchContent()
   }, [contentKey])
-
-  if (loading) {
-    return <Component className={className}>{defaultValue}</Component>
-  }
 
   return <Component className={className}>{content}</Component>
 }
