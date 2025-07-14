@@ -12,6 +12,7 @@ import { AlertCircle, CheckCircle } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { updateSiteContent } from "@/app/actions/admin-content"
+import { Eye, Edit } from "lucide-react"
 
 type ContentItem = {
   id: number
@@ -296,10 +297,190 @@ export default function ContentEditor() {
 }
 
 function LegalEditor() {
+  const [contentItems, setContentItems] = useState<ContentItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [updateResult, setUpdateResult] = useState<{ success: boolean; message: string } | null>(null)
+  const [selectedContent, setSelectedContent] = useState<ContentItem | null>(null)
+  const [previewMode, setPreviewMode] = useState(false)
+
+  // Load legal content
+  useEffect(() => {
+    const fetchLegalContent = async () => {
+      setLoading(true)
+      setError(null)
+
+      try {
+        const response = await fetch("/api/admin/content")
+        const data = await response.json()
+
+        if (response.ok && data.success) {
+          // Filter nur rechtliche Inhalte
+          const legalItems = data.content.filter((item: any) => item.key === "impressum" || item.key === "datenschutz")
+          setContentItems(legalItems)
+          if (legalItems.length > 0) {
+            setSelectedContent(legalItems[0])
+          }
+        } else {
+          setError(data.message || "Failed to load legal content")
+        }
+      } catch (error) {
+        console.error("Error loading legal content:", error)
+        setError("An unexpected error occurred")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchLegalContent()
+  }, [])
+
+  const handleContentSelect = (key: string) => {
+    const content = contentItems.find((item) => item.key === key)
+    if (content) {
+      setSelectedContent(content)
+      setPreviewMode(false) // Reset preview when switching content
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setUpdateResult(null)
+
+    if (!selectedContent) return
+
+    try {
+      const formData = new FormData(e.currentTarget)
+      const result = await updateSiteContent(formData)
+      setUpdateResult(result)
+
+      if (result.success) {
+        // Update local state
+        const updatedContent = {
+          ...selectedContent,
+          content: formData.get("content") as string,
+        }
+
+        setSelectedContent(updatedContent)
+        setContentItems(contentItems.map((item) => (item.key === updatedContent.key ? updatedContent : item)))
+      }
+    } catch (error) {
+      console.error("Error updating legal content:", error)
+      setUpdateResult({
+        success: false,
+        message: "An unexpected error occurred",
+      })
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+        <p>Rechtliche Inhalte werden geladen...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12 text-red-500">
+        <p>{error}</p>
+        <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="mt-4">
+          Erneut versuchen
+        </Button>
+      </div>
+    )
+  }
+
   return (
-    <div>
-      <h2>Legal Editor</h2>
-      <p>Hier können Sie die Rechtstexte bearbeiten.</p>
+    <div className="space-y-6">
+      {updateResult && (
+        <Alert
+          variant={updateResult.success ? "default" : "destructive"}
+          className={`mb-6 ${updateResult.success ? "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400" : ""}`}
+        >
+          {updateResult.success ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+          <AlertDescription>{updateResult.message}</AlertDescription>
+        </Alert>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="md:col-span-1 space-y-4">
+          <Label>Rechtlichen Bereich auswählen</Label>
+          <div className="space-y-2">
+            {contentItems.map((item) => (
+              <Button
+                key={item.key}
+                variant={selectedContent?.key === item.key ? "default" : "outline"}
+                className="w-full justify-start text-left"
+                onClick={() => handleContentSelect(item.key)}
+              >
+                {item.title}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        <div className="md:col-span-3">
+          {selectedContent ? (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium">{selectedContent.title} bearbeiten</h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPreviewMode(!previewMode)}
+                  className="flex items-center gap-2"
+                >
+                  {previewMode ? <Edit className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {previewMode ? "Bearbeiten" : "Vorschau"}
+                </Button>
+              </div>
+
+              {previewMode ? (
+                <div className="border rounded-lg p-6 bg-muted/30">
+                  <h4 className="font-medium mb-4">Vorschau:</h4>
+                  <div
+                    className="prose prose-sm max-w-none dark:prose-invert"
+                    dangerouslySetInnerHTML={{ __html: selectedContent.content }}
+                  />
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <input type="hidden" name="key" value={selectedContent.key} />
+                  <input type="hidden" name="id" value={selectedContent.id} />
+                  <input type="hidden" name="title" value={selectedContent.title} />
+
+                  <div className="space-y-2">
+                    <Label htmlFor="content">{selectedContent.title} Inhalt (HTML erlaubt)</Label>
+                    <Textarea
+                      id="content"
+                      name="content"
+                      rows={20}
+                      defaultValue={selectedContent.content}
+                      className="w-full font-mono text-sm"
+                      placeholder={`Geben Sie hier den Inhalt für ${selectedContent.title} ein...`}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Sie können HTML-Tags verwenden: &lt;h2&gt;, &lt;h3&gt;, &lt;p&gt;, &lt;br /&gt;, &lt;strong&gt;,
+                      etc.
+                    </p>
+                  </div>
+
+                  <Button type="submit" className="w-full">
+                    {selectedContent.title} speichern
+                  </Button>
+                </form>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-muted-foreground">
+              <p>Bitte wählen Sie einen rechtlichen Bereich aus</p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
