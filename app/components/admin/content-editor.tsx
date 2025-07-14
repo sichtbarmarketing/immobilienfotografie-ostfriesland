@@ -297,12 +297,16 @@ export default function ContentEditor() {
 }
 
 function LegalEditor() {
-  const [contentItems, setContentItems] = useState<ContentItem[]>([])
+  const [impressumContent, setImpressumContent] = useState<ContentItem | null>(null)
+  const [datenschutzContent, setDatenschutzContent] = useState<ContentItem | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [updateResult, setUpdateResult] = useState<{ success: boolean; message: string } | null>(null)
-  const [selectedContent, setSelectedContent] = useState<ContentItem | null>(null)
-  const [previewMode, setPreviewMode] = useState(false)
+  const [activeTab, setActiveTab] = useState("impressum")
+  const [previewMode, setPreviewMode] = useState<{ impressum: boolean; datenschutz: boolean }>({
+    impressum: false,
+    datenschutz: false,
+  })
 
   // Load legal content
   useEffect(() => {
@@ -315,12 +319,11 @@ function LegalEditor() {
         const data = await response.json()
 
         if (response.ok && data.success) {
-          // Filter nur rechtliche Inhalte
-          const legalItems = data.content.filter((item: any) => item.key === "impressum" || item.key === "datenschutz")
-          setContentItems(legalItems)
-          if (legalItems.length > 0) {
-            setSelectedContent(legalItems[0])
-          }
+          const impressum = data.content.find((item: any) => item.key === "impressum")
+          const datenschutz = data.content.find((item: any) => item.key === "datenschutz")
+
+          if (impressum) setImpressumContent(impressum)
+          if (datenschutz) setDatenschutzContent(datenschutz)
         } else {
           setError(data.message || "Failed to load legal content")
         }
@@ -335,19 +338,12 @@ function LegalEditor() {
     fetchLegalContent()
   }, [])
 
-  const handleContentSelect = (key: string) => {
-    const content = contentItems.find((item) => item.key === key)
-    if (content) {
-      setSelectedContent(content)
-      setPreviewMode(false) // Reset preview when switching content
-    }
-  }
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (contentType: "impressum" | "datenschutz", e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setUpdateResult(null)
 
-    if (!selectedContent) return
+    const content = contentType === "impressum" ? impressumContent : datenschutzContent
+    if (!content) return
 
     try {
       const formData = new FormData(e.currentTarget)
@@ -357,12 +353,15 @@ function LegalEditor() {
       if (result.success) {
         // Update local state
         const updatedContent = {
-          ...selectedContent,
+          ...content,
           content: formData.get("content") as string,
         }
 
-        setSelectedContent(updatedContent)
-        setContentItems(contentItems.map((item) => (item.key === updatedContent.key ? updatedContent : item)))
+        if (contentType === "impressum") {
+          setImpressumContent(updatedContent)
+        } else {
+          setDatenschutzContent(updatedContent)
+        }
       }
     } catch (error) {
       console.error("Error updating legal content:", error)
@@ -371,6 +370,13 @@ function LegalEditor() {
         message: "An unexpected error occurred",
       })
     }
+  }
+
+  const togglePreview = (contentType: "impressum" | "datenschutz") => {
+    setPreviewMode((prev) => ({
+      ...prev,
+      [contentType]: !prev[contentType],
+    }))
   }
 
   if (loading) {
@@ -405,62 +411,51 @@ function LegalEditor() {
         </Alert>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="md:col-span-1 space-y-4">
-          <Label>Rechtlichen Bereich auswählen</Label>
-          <div className="space-y-2">
-            {contentItems.map((item) => (
-              <Button
-                key={item.key}
-                variant={selectedContent?.key === item.key ? "default" : "outline"}
-                className="w-full justify-start text-left"
-                onClick={() => handleContentSelect(item.key)}
-              >
-                {item.title}
-              </Button>
-            ))}
-          </div>
-        </div>
+      <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid grid-cols-2 mb-8">
+          <TabsTrigger value="impressum">Impressum</TabsTrigger>
+          <TabsTrigger value="datenschutz">Datenschutzerklärung</TabsTrigger>
+        </TabsList>
 
-        <div className="md:col-span-3">
-          {selectedContent ? (
+        <TabsContent value="impressum" className="mt-0">
+          {impressumContent ? (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-medium">{selectedContent.title} bearbeiten</h3>
+                <h3 className="text-lg font-medium">Impressum bearbeiten</h3>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setPreviewMode(!previewMode)}
+                  onClick={() => togglePreview("impressum")}
                   className="flex items-center gap-2"
                 >
-                  {previewMode ? <Edit className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  {previewMode ? "Bearbeiten" : "Vorschau"}
+                  {previewMode.impressum ? <Edit className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {previewMode.impressum ? "Bearbeiten" : "Vorschau"}
                 </Button>
               </div>
 
-              {previewMode ? (
+              {previewMode.impressum ? (
                 <div className="border rounded-lg p-6 bg-muted/30">
                   <h4 className="font-medium mb-4">Vorschau:</h4>
                   <div
                     className="prose prose-sm max-w-none dark:prose-invert"
-                    dangerouslySetInnerHTML={{ __html: selectedContent.content }}
+                    dangerouslySetInnerHTML={{ __html: impressumContent.content }}
                   />
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <input type="hidden" name="key" value={selectedContent.key} />
-                  <input type="hidden" name="id" value={selectedContent.id} />
-                  <input type="hidden" name="title" value={selectedContent.title} />
+                <form onSubmit={(e) => handleSubmit("impressum", e)} className="space-y-6">
+                  <input type="hidden" name="key" value={impressumContent.key} />
+                  <input type="hidden" name="id" value={impressumContent.id} />
+                  <input type="hidden" name="title" value={impressumContent.title} />
 
                   <div className="space-y-2">
-                    <Label htmlFor="content">{selectedContent.title} Inhalt (HTML erlaubt)</Label>
+                    <Label htmlFor="impressum-content">Impressum Inhalt (HTML erlaubt)</Label>
                     <Textarea
-                      id="content"
+                      id="impressum-content"
                       name="content"
                       rows={20}
-                      defaultValue={selectedContent.content}
+                      defaultValue={impressumContent.content}
                       className="w-full font-mono text-sm"
-                      placeholder={`Geben Sie hier den Inhalt für ${selectedContent.title} ein...`}
+                      placeholder="Geben Sie hier den Inhalt Ihres Impressums ein..."
                     />
                     <p className="text-xs text-muted-foreground">
                       Sie können HTML-Tags verwenden: &lt;h2&gt;, &lt;h3&gt;, &lt;p&gt;, &lt;br /&gt;, &lt;strong&gt;,
@@ -469,18 +464,77 @@ function LegalEditor() {
                   </div>
 
                   <Button type="submit" className="w-full">
-                    {selectedContent.title} speichern
+                    Impressum speichern
                   </Button>
                 </form>
               )}
             </div>
           ) : (
             <div className="text-center py-12 text-muted-foreground">
-              <p>Bitte wählen Sie einen rechtlichen Bereich aus</p>
+              <p>Impressum-Inhalt nicht gefunden</p>
             </div>
           )}
-        </div>
-      </div>
+        </TabsContent>
+
+        <TabsContent value="datenschutz" className="mt-0">
+          {datenschutzContent ? (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium">Datenschutzerklärung bearbeiten</h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => togglePreview("datenschutz")}
+                  className="flex items-center gap-2"
+                >
+                  {previewMode.datenschutz ? <Edit className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {previewMode.datenschutz ? "Bearbeiten" : "Vorschau"}
+                </Button>
+              </div>
+
+              {previewMode.datenschutz ? (
+                <div className="border rounded-lg p-6 bg-muted/30">
+                  <h4 className="font-medium mb-4">Vorschau:</h4>
+                  <div
+                    className="prose prose-sm max-w-none dark:prose-invert"
+                    dangerouslySetInnerHTML={{ __html: datenschutzContent.content }}
+                  />
+                </div>
+              ) : (
+                <form onSubmit={(e) => handleSubmit("datenschutz", e)} className="space-y-6">
+                  <input type="hidden" name="key" value={datenschutzContent.key} />
+                  <input type="hidden" name="id" value={datenschutzContent.id} />
+                  <input type="hidden" name="title" value={datenschutzContent.title} />
+
+                  <div className="space-y-2">
+                    <Label htmlFor="datenschutz-content">Datenschutzerklärung Inhalt (HTML erlaubt)</Label>
+                    <Textarea
+                      id="datenschutz-content"
+                      name="content"
+                      rows={20}
+                      defaultValue={datenschutzContent.content}
+                      className="w-full font-mono text-sm"
+                      placeholder="Geben Sie hier den Inhalt Ihrer Datenschutzerklärung ein..."
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Sie können HTML-Tags verwenden: &lt;h2&gt;, &lt;h3&gt;, &lt;p&gt;, &lt;br /&gt;, &lt;strong&gt;,
+                      etc.
+                    </p>
+                  </div>
+
+                  <Button type="submit" className="w-full">
+                    Datenschutzerklärung speichern
+                  </Button>
+                </form>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-muted-foreground">
+              <p>Datenschutzerklärung-Inhalt nicht gefunden</p>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
