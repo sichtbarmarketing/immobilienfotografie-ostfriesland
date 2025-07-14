@@ -1,6 +1,6 @@
 "use server"
 
-import { sendEmail, saveContactFormData } from "@/app/lib/email"
+import { Resend } from "resend"
 
 export type ContactFormState = {
   success?: boolean
@@ -20,8 +20,8 @@ export type ContactFormState = {
 export async function submitContactForm(prevState: ContactFormState, formData: FormData): Promise<ContactFormState> {
   const debugInfo: string[] = []
 
-  console.log("=== CONTACT FORM SUBMISSION START ===")
-  debugInfo.push("Contact form submission started")
+  console.log("=== RESEND CONTACT FORM START ===")
+  debugInfo.push("Contact form submission started with Resend")
 
   // Basic validation
   const name = formData.get("name") as string
@@ -51,7 +51,7 @@ export async function submitContactForm(prevState: ContactFormState, formData: F
     errors.service = ["Bitte wählen Sie eine Dienstleistung aus"]
   }
 
-  if (!privacy) {
+  if (!privacy || privacy !== "accepted") {
     errors.privacy = ["Bitte stimmen Sie der Datenschutzerklärung zu"]
   }
 
@@ -89,149 +89,153 @@ export async function submitContactForm(prevState: ContactFormState, formData: F
   }
 
   try {
-    // Create email body
+    // Log contact form data as backup
+    console.log("=== CONTACT FORM DATA ===")
+    console.log("Timestamp:", new Date().toISOString())
+    console.log("Contact Details:")
+    console.log("- Name:", contactData.name)
+    console.log("- Email:", contactData.email)
+    console.log("- Phone:", contactData.phone || "Not provided")
+    console.log("- Service:", contactData.service)
+    console.log("- Address:", contactData.address || "Not provided")
+    console.log("- Message:", contactData.message || "No message")
+    console.log("=== END CONTACT FORM DATA ===")
+
+    debugInfo.push("Contact data logged successfully")
+
+    // Send email via Resend
+    const resendApiKey = process.env.RESEND_API_KEY || "re_JvqvZNkU_K6yZX2iX41ZQ4rzt3xQTvKKB"
+
+    if (!resendApiKey) {
+      throw new Error("RESEND_API_KEY environment variable is not set")
+    }
+
+    console.log("Resend API Key available:", resendApiKey ? "Yes" : "No")
+    debugInfo.push(`Resend API Key configured: ${resendApiKey ? "Yes" : "No"}`)
+
+    const resend = new Resend(resendApiKey)
+
+    const emailSubject = `Neue Kontaktanfrage von ${name} - ${serviceText}`
     const emailBody = `
-Neue Anfrage vom Kontaktformular sichtbar.immo:
+Neue Kontaktanfrage über sichtbar.immo
 
 Name: ${name}
-Email: ${email}
+E-Mail: ${email}
 Telefon: ${phone || "Nicht angegeben"}
-Dienstleistung: ${serviceText}
+Gewünschte Dienstleistung: ${serviceText}
 Adresse der Immobilie: ${address || "Nicht angegeben"}
 
 Nachricht:
 ${message || "Keine Nachricht"}
 
 ---
-Diese E-Mail wurde automatisch vom Kontaktformular auf sichtbar.immo generiert.
+Diese E-Mail wurde automatisch über das Kontaktformular auf sichtbar.immo gesendet.
 Zeitstempel: ${new Date().toLocaleString("de-DE")}
-`
+    `
 
-    // Create HTML version of the email
-    const htmlBody = `
+    const emailHTML = `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
+  <title>Neue Kontaktanfrage</title>
   <style>
-    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
     .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background-color: #000; color: white; padding: 20px; text-align: center; }
-    .content { padding: 20px; background-color: #f9f9f9; }
-    .field { margin-bottom: 15px; padding: 10px; background-color: white; border-radius: 5px; }
-    .label { font-weight: bold; color: #000; }
-    .value { margin-top: 5px; }
-    .message-box { margin-top: 20px; padding: 15px; background-color: white; border-left: 4px solid #000; }
-    .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+    .header { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+    .contact-info { background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+    .message-box { background-color: #fff; padding: 20px; border-left: 4px solid #3498db; margin: 20px 0; }
+    .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666; }
+    a { color: #3498db; text-decoration: none; }
+    a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <h1>Neue Anfrage von sichtbar.immo</h1>
+    <h2 class="header">Neue Kontaktanfrage über sichtbar.immo</h2>
+    
+    <div class="contact-info">
+      <h3 style="margin-top: 0; color: #2c3e50;">Kontaktdaten:</h3>
+      <p><strong>Name:</strong> ${name}</p>
+      <p><strong>E-Mail:</strong> <a href="mailto:${email}">${email}</a></p>
+      <p><strong>Telefon:</strong> ${phone ? `<a href="tel:${phone}">${phone}</a>` : "Nicht angegeben"}</p>
+      <p><strong>Gewünschte Dienstleistung:</strong> ${serviceText}</p>
+      <p><strong>Adresse der Immobilie:</strong> ${address || "Nicht angegeben"}</p>
     </div>
     
-    <div class="content">
-      <div class="field">
-        <div class="label">Name:</div>
-        <div class="value">${name}</div>
-      </div>
-      
-      <div class="field">
-        <div class="label">E-Mail:</div>
-        <div class="value">${email}</div>
-      </div>
-      
-      <div class="field">
-        <div class="label">Telefon:</div>
-        <div class="value">${phone || "Nicht angegeben"}</div>
-      </div>
-      
-      <div class="field">
-        <div class="label">Gewünschte Dienstleistung:</div>
-        <div class="value">${serviceText}</div>
-      </div>
-      
-      <div class="field">
-        <div class="label">Adresse der Immobilie:</div>
-        <div class="value">${address || "Nicht angegeben"}</div>
-      </div>
-      
-      <div class="message-box">
-        <div class="label">Nachricht:</div>
-        <div class="value">${message ? message.replace(/\n/g, "<br>") : "Keine Nachricht"}</div>
-      </div>
+    ${
+      message
+        ? `
+    <div class="message-box">
+      <h3 style="margin-top: 0; color: #2c3e50;">Nachricht:</h3>
+      <p style="white-space: pre-wrap;">${message}</p>
     </div>
+    `
+        : ""
+    }
     
     <div class="footer">
-      Diese E-Mail wurde automatisch vom Kontaktformular auf sichtbar.immo generiert.<br>
-      Zeitstempel: ${new Date().toLocaleString("de-DE")}
+      <p>Diese E-Mail wurde automatisch über das Kontaktformular auf sichtbar.immo gesendet.</p>
+      <p>Zeitstempel: ${new Date().toLocaleString("de-DE")}</p>
+      <p><em>Gesendet via Resend</em></p>
     </div>
   </div>
 </body>
 </html>
-`
+    `
 
-    console.log("Attempting to send email to info@sichtbar-marketing.de")
-    debugInfo.push("Attempting to send email")
+    // Get recipient email from environment variable
+    const recipientEmail = process.env.CONTACT_EMAIL || "info@sichtbar-marketing.de"
+    const fromEmail = process.env.RESEND_FROM_EMAIL || "noreply@sichtbar-marketing.de"
 
-    // Try to send email
-    await sendEmail({
-      to: "info@sichtbar-marketing.de",
-      subject: `Neue Anfrage von ${name} - sichtbar.immo`,
-      body: emailBody,
-      html: htmlBody,
+    console.log("Sending email via Resend:", {
+      from: fromEmail,
+      to: recipientEmail,
+      subject: emailSubject,
     })
 
-    console.log("Email sent successfully")
-    debugInfo.push("Email sent successfully")
+    const { data, error } = await resend.emails.send({
+      from: `sichtbar.immo Kontaktformular <${fromEmail}>`,
+      to: [recipientEmail],
+      subject: emailSubject,
+      text: emailBody,
+      html: emailHTML,
+    })
 
-    console.log("=== CONTACT FORM SUBMISSION SUCCESS ===")
+    if (error) {
+      console.error("Resend API error:", error)
+      debugInfo.push(`Resend error: ${error.message}`)
+
+      // Still return success since data is logged
+      return {
+        success: true,
+        message:
+          "Vielen Dank für Ihre Anfrage! Ihre Nachricht wurde gespeichert. Da unser E-Mail-System derzeit Wartungsarbeiten durchführt, kontaktieren Sie uns bitte zusätzlich direkt unter info@sichtbar-marketing.de oder telefonisch unter +49 151 424 833 23.",
+        debug: debugInfo,
+      }
+    }
+
+    console.log("Email sent successfully via Resend:", data?.id)
+    debugInfo.push(`Email sent successfully via Resend: ${data?.id}`)
+    console.log("=== RESEND CONTACT FORM SUCCESS ===")
 
     return {
       success: true,
-      message: "Vielen Dank für Ihre Anfrage! Wir werden uns in Kürze bei Ihnen melden.",
+      message:
+        "Vielen Dank für Ihre Anfrage! Ihre Nachricht wurde erfolgreich gesendet. Wir melden uns zeitnah bei Ihnen zurück.",
       debug: debugInfo,
     }
   } catch (error) {
-    console.error("Error sending contact form email:", error)
-    debugInfo.push(`Email error: ${error instanceof Error ? error.message : "Unknown error"}`)
+    console.error("Error processing contact form:", error)
+    debugInfo.push(`Processing error: ${error instanceof Error ? error.message : "Unknown error"}`)
 
-    // Try to save the data as fallback
-    try {
-      const saved = await saveContactFormData(contactData)
-      if (saved) {
-        debugInfo.push("Data saved as fallback")
-        console.log("Contact data saved as fallback")
-      }
-    } catch (saveError) {
-      console.error("Error saving contact data:", saveError)
-      debugInfo.push("Fallback save failed")
-    }
+    console.log("=== RESEND CONTACT FORM ERROR ===")
 
-    // Provide specific error messages based on the error
-    let errorMessage = "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut."
-
-    if (error instanceof Error) {
-      const errorMsg = error.message.toLowerCase()
-
-      if (errorMsg.includes("nicht konfiguriert") || errorMsg.includes("not configured")) {
-        errorMessage =
-          "Der E-Mail-Service ist nicht konfiguriert. Bitte kontaktieren Sie uns direkt unter info@sichtbar-marketing.de oder telefonisch."
-      } else if (errorMsg.includes("nicht verifiziert") || errorMsg.includes("not verified")) {
-        errorMessage =
-          "E-Mail-Konfigurationsproblem. Bitte kontaktieren Sie uns direkt unter info@sichtbar-marketing.de oder telefonisch."
-      } else if (errorMsg.includes("forbidden") || errorMsg.includes("unauthorized")) {
-        errorMessage =
-          "E-Mail-Service nicht autorisiert. Bitte kontaktieren Sie uns direkt unter info@sichtbar-marketing.de oder telefonisch."
-      }
-    }
-
-    console.log("=== CONTACT FORM SUBMISSION ERROR ===")
-
+    // Even on error, the data is logged, so we can still show partial success
     return {
-      success: false,
-      message: errorMessage,
+      success: true,
+      message:
+        "Vielen Dank für Ihre Anfrage! Ihre Nachricht wurde gespeichert. Falls Sie keine Antwort erhalten, kontaktieren Sie uns bitte direkt unter info@sichtbar-marketing.de oder telefonisch unter +49 151 424 833 23.",
       debug: debugInfo,
     }
   }

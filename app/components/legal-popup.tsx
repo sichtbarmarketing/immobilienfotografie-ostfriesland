@@ -72,7 +72,7 @@ const staticContent = {
       
       <p>
         <strong>Wofür nutzen wir Ihre Daten?</strong><br />
-        Ein Teil der Daten wird erhoben, um eine fehlerfreie Bereitstellung der Website zu gewährleisten. Andere Daten können zur Analyse Ihres Nutzerverhaltens verwendet werden.
+        Ein Teil der Daten wird erhoben, um eine fehlerfreie Bereitstellung der Website zu gewährleisten. Andere Daten können zur Analyse Ihres Nutzerverhaltens verwendet.
       </p>
       
       <p>
@@ -92,18 +92,39 @@ export default function LegalPopup({ contentKey, isOpen, onClose }: LegalPopupPr
     if (isOpen) {
       setLoading(true)
 
-      // Use static content instead of fetching from Supabase
-      const legalContent = staticContent[contentKey as keyof typeof staticContent]
+      // Fetch content from the API instead of using static content
+      const fetchLegalContent = async () => {
+        try {
+          const response = await fetch("/api/admin/content")
+          const data = await response.json()
 
-      if (legalContent) {
-        setTitle(legalContent.title)
-        setContent(legalContent.content)
-      } else {
-        setTitle(contentKey === "impressum" ? "Impressum" : "Datenschutzerklärung")
-        setContent("Inhalt wird noch hinzugefügt.")
+          if (response.ok && data.success) {
+            const legalContent = data.content.find((item: any) => item.key === contentKey)
+
+            if (legalContent) {
+              setTitle(legalContent.title)
+              setContent(legalContent.content)
+            } else {
+              // Fallback to default titles
+              setTitle(contentKey === "impressum" ? "Impressum" : "Datenschutzerklärung")
+              setContent("Inhalt wird noch hinzugefügt.")
+            }
+          } else {
+            // Fallback to default titles
+            setTitle(contentKey === "impressum" ? "Impressum" : "Datenschutzerklärung")
+            setContent("Inhalt wird noch hinzugefügt.")
+          }
+        } catch (error) {
+          console.error("Error fetching legal content:", error)
+          // Fallback to default titles
+          setTitle(contentKey === "impressum" ? "Impressum" : "Datenschutzerklärung")
+          setContent("Inhalt wird noch hinzugefügt.")
+        } finally {
+          setLoading(false)
+        }
       }
 
-      setLoading(false)
+      fetchLegalContent()
     }
   }, [contentKey, isOpen])
 

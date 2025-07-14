@@ -11,13 +11,10 @@ export async function sendEmail({ to, subject, body, html }: EmailParams): Promi
   console.log("=== EMAIL DEBUG START ===")
   console.log("SendEmail function called with:", { to, subject, hasHtml: !!html })
   console.log("SENDGRID_API_KEY available:", !!SENDGRID_API_KEY)
-  console.log("SENDGRID_API_KEY length:", SENDGRID_API_KEY?.length || 0)
 
   if (!SENDGRID_API_KEY) {
     console.error("SENDGRID_API_KEY is not defined")
-    throw new Error(
-      "E-Mail-Service nicht konfiguriert. Bitte kontaktieren Sie uns direkt unter info@sichtbar-marketing.de",
-    )
+    throw new Error("E-Mail-Service nicht konfiguriert")
   }
 
   // Validate API key format (SendGrid keys start with 'SG.')
@@ -29,7 +26,7 @@ export async function sendEmail({ to, subject, body, html }: EmailParams): Promi
   const emailData = {
     personalizations: [{ to: [{ email: to }] }],
     from: {
-      email: "noreply@sichtbar-marketing.de", // Changed to match the domain
+      email: "noreply@sichtbar-marketing.de",
       name: "sichtbar.immo Kontaktformular",
     },
     subject,
@@ -49,7 +46,6 @@ export async function sendEmail({ to, subject, body, html }: EmailParams): Promi
     })
 
     console.log("SendGrid response status:", response.status)
-    console.log("SendGrid response headers:", Object.fromEntries(response.headers.entries()))
 
     if (!response.ok) {
       const errorText = await response.text()
@@ -64,10 +60,12 @@ export async function sendEmail({ to, subject, body, html }: EmailParams): Promi
           console.error("SendGrid errors:", errors)
 
           // Provide user-friendly error messages
-          if (errors.includes("The from address does not match a verified Sender Identity")) {
-            errorMessage = "E-Mail-Absender nicht verifiziert. Bitte kontaktieren Sie uns direkt."
+          if (errors.includes("Maximum credits exceeded")) {
+            errorMessage = "E-Mail-Service vorübergehend nicht verfügbar (Kontingent überschritten)"
+          } else if (errors.includes("The from address does not match a verified Sender Identity")) {
+            errorMessage = "E-Mail-Absender nicht verifiziert"
           } else if (errors.includes("access forbidden")) {
-            errorMessage = "E-Mail-Service nicht autorisiert. Bitte kontaktieren Sie uns direkt."
+            errorMessage = "E-Mail-Service nicht autorisiert"
           } else {
             errorMessage = `E-Mail-Fehler: ${errors}`
           }
@@ -89,7 +87,7 @@ export async function sendEmail({ to, subject, body, html }: EmailParams): Promi
   }
 }
 
-// Alternative function to save contact form data to database as fallback
+// Enhanced function to save contact form data as fallback
 export async function saveContactFormData(formData: {
   name: string
   email: string
@@ -99,11 +97,25 @@ export async function saveContactFormData(formData: {
   message?: string
 }) {
   try {
-    console.log("Saving contact form data as fallback:", formData)
+    console.log("=== SAVING CONTACT FORM DATA ===")
+    console.log("Timestamp:", new Date().toISOString())
+    console.log("Contact Details:")
+    console.log("- Name:", formData.name)
+    console.log("- Email:", formData.email)
+    console.log("- Phone:", formData.phone || "Not provided")
+    console.log("- Service:", formData.service)
+    console.log("- Address:", formData.address || "Not provided")
+    console.log("- Message:", formData.message || "No message")
+    console.log("=== END CONTACT FORM DATA ===")
 
-    // Here you could save to Supabase or another database
-    // For now, we'll just log it
-    console.log("Contact form data saved successfully")
+    // In a production environment, you could:
+    // 1. Save to a database
+    // 2. Write to a file
+    // 3. Send to a webhook
+    // 4. Store in a queue for later processing
+
+    // For now, we're logging it so it appears in the server logs
+    // This ensures the data is captured even if email fails
 
     return true
   } catch (error) {

@@ -1,50 +1,70 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import type React from "react"
+
+import { useState, useTransition, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { submitContactForm, type ContactFormState } from "@/app/actions/contact-form"
 
 export function ContactForm() {
   const [state, setState] = useState<ContactFormState>({})
   const [isPending, startTransition] = useTransition()
+  const formRef = useRef<HTMLFormElement>(null)
 
-  const handleSubmit = async (formData: FormData) => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    const form = event.currentTarget
+    const formData = new FormData(form)
+
     startTransition(async () => {
-      const result = await submitContactForm({}, formData)
-      setState(result)
+      try {
+        const result = await submitContactForm({}, formData)
+        setState(result)
+
+        // Reset form on success using the ref
+        if (result.success && formRef.current) {
+          formRef.current.reset()
+        }
+      } catch (error) {
+        console.error("Form submission error:", error)
+        setState({
+          success: false,
+          message:
+            "Ein unerwarteter Fehler ist aufgetreten. Bitte kontaktieren Sie uns direkt unter info@sichtbar-marketing.de oder telefonisch unter +49 151 424 833 23.",
+        })
+      }
     })
   }
 
   return (
-    <form className="space-y-8" action={handleSubmit}>
+    <form ref={formRef} className="space-y-8" onSubmit={handleSubmit}>
       {state?.message && (
         <div
           className={`p-6 rounded-xl ${
             state.success
-              ? "bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
+              ? "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800"
               : "bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800"
           }`}
         >
           <div className="font-medium mb-2">{state.message}</div>
-          {!state.success && (
-            <div className="text-sm">
-              <p className="mb-2">Alternative Kontaktmöglichkeiten:</p>
-              <ul className="list-disc list-inside space-y-1">
-                <li>
-                  E-Mail:{" "}
-                  <a href="mailto:info@sichtbar-marketing.de" className="underline">
-                    info@sichtbar-marketing.de
-                  </a>
-                </li>
-                <li>
-                  Telefon:{" "}
-                  <a href="tel:+4949123456789" className="underline">
-                    +49 (0) 491 123 456 789
-                  </a>
-                </li>
-              </ul>
-            </div>
-          )}
+          <div className="text-sm">
+            <p className="mb-2">Direkte Kontaktmöglichkeiten:</p>
+            <ul className="list-disc list-inside space-y-1">
+              <li>
+                E-Mail:{" "}
+                <a href="mailto:info@sichtbar-marketing.de" className="underline">
+                  info@sichtbar-marketing.de
+                </a>
+              </li>
+              <li>
+                Telefon:{" "}
+                <a href="tel:+4915142483323" className="underline">
+                  +49 151 424 833 23
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
       )}
 
@@ -74,6 +94,7 @@ export function ContactForm() {
             } bg-transparent px-4 py-3 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`}
             placeholder="Ihr Name"
             disabled={isPending}
+            required
           />
           {state?.errors?.name && <p className="text-sm text-red-500 dark:text-red-400">{state.errors.name[0]}</p>}
         </div>
@@ -93,6 +114,7 @@ export function ContactForm() {
             } bg-transparent px-4 py-3 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`}
             placeholder="Ihre E-Mail"
             disabled={isPending}
+            required
           />
           {state?.errors?.email && <p className="text-sm text-red-500 dark:text-red-400">{state.errors.email[0]}</p>}
         </div>
@@ -107,6 +129,7 @@ export function ContactForm() {
         <input
           id="phone"
           name="phone"
+          type="tel"
           className="flex h-12 w-full rounded-xl border border-input bg-transparent px-4 py-3 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           placeholder="Ihre Telefonnummer"
           disabled={isPending}
@@ -126,6 +149,7 @@ export function ContactForm() {
             state?.errors?.service ? "border-red-500" : "border-input"
           } bg-transparent px-4 py-3 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`}
           disabled={isPending}
+          required
         >
           <option value="">Bitte auswählen</option>
           <option value="fotografie">Immobilienfotografie</option>
@@ -162,6 +186,7 @@ export function ContactForm() {
         <textarea
           id="message"
           name="message"
+          rows={5}
           className="flex min-h-[150px] w-full rounded-xl border border-input bg-transparent px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           placeholder="Ihre Nachricht und weitere Details zur Immobilie"
           disabled={isPending}
@@ -172,10 +197,12 @@ export function ContactForm() {
           type="checkbox"
           id="privacy"
           name="privacy"
+          value="accepted"
           className={`mt-1 h-5 w-5 rounded border-gray-300 text-black focus:ring-black ${
             state?.errors?.privacy ? "border-red-500" : ""
           }`}
           disabled={isPending}
+          required
         />
         <label
           htmlFor="privacy"
