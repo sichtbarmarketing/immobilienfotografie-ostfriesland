@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { getStoredContent } from "@/app/actions/admin-content"
 
 // Force dynamic rendering
 export const dynamic = "force-dynamic"
@@ -121,6 +122,17 @@ function createSupabaseClient() {
 
 export async function GET() {
   try {
+    // First try to get from stored content (in-memory)
+    const storedContent = await getStoredContent()
+    if (storedContent && storedContent.length > 0) {
+      console.log("Returning stored content:", storedContent.length, "items")
+      return NextResponse.json({
+        success: true,
+        content: storedContent,
+        source: "stored",
+      })
+    }
+
     const supabase = createSupabaseClient()
 
     if (!supabase) {

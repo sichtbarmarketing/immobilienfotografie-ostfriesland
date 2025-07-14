@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { updateSiteContent } from "@/app/actions/admin-content"
 import { Eye, Edit } from "lucide-react"
+import { RichTextEditor } from "./rich-text-editor"
 
 type ContentItem = {
   id: number
@@ -132,8 +133,15 @@ export default function ContentEditor() {
       setError(null)
 
       try {
-        const response = await fetch("/api/admin/content")
+        const response = await fetch("/api/admin/content", {
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache",
+          },
+        })
         const data = await response.json()
+
+        console.log("Fetched content:", data)
 
         if (response.ok && data.success) {
           setContentItems(data.content)
@@ -163,6 +171,7 @@ export default function ContentEditor() {
     const content = contentItems.find((item) => item.key === key)
     if (content) {
       setSelectedContent(content)
+      setUpdateResult(null) // Clear any previous messages
     }
   }
 
@@ -174,7 +183,18 @@ export default function ContentEditor() {
 
     try {
       const formData = new FormData(e.currentTarget)
+
+      console.log("Submitting form data:", {
+        key: formData.get("key"),
+        id: formData.get("id"),
+        title: formData.get("title"),
+        contentLength: (formData.get("content") as string)?.length,
+      })
+
       const result = await updateSiteContent(formData)
+
+      console.log("Update result:", result)
+
       setUpdateResult(result)
 
       if (result.success) {
@@ -187,12 +207,17 @@ export default function ContentEditor() {
 
         setSelectedContent(updatedContent)
         setContentItems(contentItems.map((item) => (item.key === updatedContent.key ? updatedContent : item)))
+
+        // Auto-hide success message after 3 seconds
+        setTimeout(() => {
+          setUpdateResult(null)
+        }, 3000)
       }
     } catch (error) {
       console.error("Error updating content:", error)
       setUpdateResult({
         success: false,
-        message: "An unexpected error occurred",
+        message: "Ein unerwarteter Fehler ist aufgetreten",
       })
     }
   }
@@ -253,7 +278,13 @@ export default function ContentEditor() {
 
                       <div className="space-y-2">
                         <Label htmlFor="title">Titel</Label>
-                        <Input id="title" name="title" defaultValue={selectedContent.title} className="w-full" />
+                        <Input
+                          id="title"
+                          name="title"
+                          defaultValue={selectedContent.title}
+                          key={`title-${selectedContent.key}`}
+                          className="w-full"
+                        />
                       </div>
 
                       <div className="space-y-2">
@@ -263,6 +294,7 @@ export default function ContentEditor() {
                           name="content"
                           rows={10}
                           defaultValue={selectedContent.content}
+                          key={`content-${selectedContent.key}`}
                           className="w-full font-mono"
                         />
                       </div>
@@ -313,7 +345,12 @@ function LegalEditor() {
       setError(null)
 
       try {
-        const response = await fetch("/api/admin/content")
+        const response = await fetch("/api/admin/content", {
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache",
+          },
+        })
         const data = await response.json()
 
         let impressum, datenschutz
@@ -365,7 +402,17 @@ function LegalEditor() {
 
     try {
       const formData = new FormData(e.currentTarget)
+
+      console.log("Submitting legal content:", {
+        contentType,
+        key: formData.get("key"),
+        contentLength: (formData.get("content") as string)?.length,
+      })
+
       const result = await updateSiteContent(formData)
+
+      console.log("Legal update result:", result)
+
       setUpdateResult(result)
 
       if (result.success) {
@@ -380,6 +427,11 @@ function LegalEditor() {
         } else {
           setDatenschutzContent(updatedContent)
         }
+
+        // Auto-hide success message after 3 seconds
+        setTimeout(() => {
+          setUpdateResult(null)
+        }, 3000)
       }
     } catch (error) {
       console.error("Error updating legal content:", error)
@@ -454,20 +506,18 @@ function LegalEditor() {
                 <input type="hidden" name="title" value="Impressum" />
 
                 <div className="space-y-2">
-                  <Label htmlFor="impressum-content">Impressum Inhalt (HTML erlaubt)</Label>
-                  <Textarea
-                    id="impressum-content"
-                    name="content"
-                    rows={20}
-                    defaultValue={impressumContent?.content || ""}
-                    key={`impressum-${impressumContent?.id}`} // Force re-render when content changes
-                    className="w-full font-mono text-sm"
+                  <Label htmlFor="impressum-content">Impressum Inhalt</Label>
+                  <RichTextEditor
+                    value={impressumContent?.content || ""}
+                    onChange={(value) => {
+                      if (impressumContent) {
+                        setImpressumContent({ ...impressumContent, content: value })
+                      }
+                    }}
                     placeholder="Geben Sie hier den Inhalt Ihres Impressums ein..."
+                    rows={20}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Sie können HTML-Tags verwenden: &lt;h2&gt;, &lt;h3&gt;, &lt;p&gt;, &lt;br /&gt;, &lt;strong&gt;,
-                    etc.
-                  </p>
+                  <input type="hidden" name="content" value={impressumContent?.content || ""} />
                 </div>
 
                 <Button type="submit" className="w-full">
@@ -508,20 +558,18 @@ function LegalEditor() {
                 <input type="hidden" name="title" value="Datenschutzerklärung" />
 
                 <div className="space-y-2">
-                  <Label htmlFor="datenschutz-content">Datenschutzerklärung Inhalt (HTML erlaubt)</Label>
-                  <Textarea
-                    id="datenschutz-content"
-                    name="content"
-                    rows={20}
-                    defaultValue={datenschutzContent?.content || ""}
-                    key={`datenschutz-${datenschutzContent?.id}`} // Force re-render when content changes
-                    className="w-full font-mono text-sm"
+                  <Label htmlFor="datenschutz-content">Datenschutzerklärung Inhalt</Label>
+                  <RichTextEditor
+                    value={datenschutzContent?.content || ""}
+                    onChange={(value) => {
+                      if (datenschutzContent) {
+                        setDatenschutzContent({ ...datenschutzContent, content: value })
+                      }
+                    }}
                     placeholder="Geben Sie hier den Inhalt Ihrer Datenschutzerklärung ein..."
+                    rows={20}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Sie können HTML-Tags verwenden: &lt;h2&gt;, &lt;h3&gt;, &lt;p&gt;, &lt;br /&gt;, &lt;strong&gt;,
-                    etc.
-                  </p>
+                  <input type="hidden" name="content" value={datenschutzContent?.content || ""} />
                 </div>
 
                 <Button type="submit" className="w-full">
