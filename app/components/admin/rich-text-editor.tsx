@@ -1,195 +1,167 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import type React from "react"
+
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Bold, Italic, Underline, List, ListOrdered, Link, Heading1, Heading2, Heading3, Eye, Code } from "lucide-react"
+import { Bold, Italic, Underline, List, ListOrdered, Link, Undo, Redo, Type, Eye, Code } from "lucide-react"
 
 interface RichTextEditorProps {
   value: string
   onChange: (value: string) => void
   placeholder?: string
-  rows?: number
 }
 
-export function RichTextEditor({ value, onChange, placeholder, rows = 15 }: RichTextEditorProps) {
-  const [activeTab, setActiveTab] = useState<"visual" | "html">("visual")
-  const [htmlContent, setHtmlContent] = useState(value)
+export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorProps) {
+  const [activeTab, setActiveTab] = useState("visual")
+  const editorRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
-    setHtmlContent(value)
-  }, [value])
+    if (activeTab === "visual" && editorRef.current) {
+      editorRef.current.innerHTML = value
+    }
+  }, [value, activeTab])
 
-  const insertHtml = (before: string, after = "") => {
-    const textarea = textareaRef.current
-    if (!textarea) return
-
-    const start = textarea.selectionStart
-    const end = textarea.selectionEnd
-    const selectedText = htmlContent.substring(start, end)
-
-    const newText = htmlContent.substring(0, start) + before + selectedText + after + htmlContent.substring(end)
-
-    setHtmlContent(newText)
-    onChange(newText)
-
-    // Restore cursor position
-    setTimeout(() => {
-      textarea.focus()
-      textarea.setSelectionRange(start + before.length, start + before.length + selectedText.length)
-    }, 0)
+  const execCommand = (command: string, value?: string) => {
+    document.execCommand(command, false, value)
+    updateContent()
   }
 
-  const formatButtons = [
-    {
-      icon: Heading1,
-      label: "Überschrift 1",
-      action: () => insertHtml("<h1>", "</h1>"),
-    },
-    {
-      icon: Heading2,
-      label: "Überschrift 2",
-      action: () => insertHtml("<h2>", "</h2>"),
-    },
-    {
-      icon: Heading3,
-      label: "Überschrift 3",
-      action: () => insertHtml("<h3>", "</h3>"),
-    },
-    {
-      icon: Bold,
-      label: "Fett",
-      action: () => insertHtml("<strong>", "</strong>"),
-    },
-    {
-      icon: Italic,
-      label: "Kursiv",
-      action: () => insertHtml("<em>", "</em>"),
-    },
-    {
-      icon: Underline,
-      label: "Unterstrichen",
-      action: () => insertHtml("<u>", "</u>"),
-    },
-    {
-      icon: List,
-      label: "Aufzählung",
-      action: () => insertHtml("<ul>\n<li>", "</li>\n</ul>"),
-    },
-    {
-      icon: ListOrdered,
-      label: "Nummerierte Liste",
-      action: () => insertHtml("<ol>\n<li>", "</li>\n</ol>"),
-    },
-    {
-      icon: Link,
-      label: "Link",
-      action: () => insertHtml('<a href="https://example.com">', "</a>"),
-    },
-  ]
-
-  const insertParagraph = () => {
-    insertHtml("<p>", "</p>")
+  const updateContent = () => {
+    if (editorRef.current) {
+      onChange(editorRef.current.innerHTML)
+    }
   }
 
-  const insertLineBreak = () => {
-    insertHtml("<br />")
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onChange(e.target.value)
+  }
+
+  const insertHeading = (level: number) => {
+    execCommand("formatBlock", `h${level}`)
+  }
+
+  const insertLink = () => {
+    const url = prompt("Link URL eingeben:")
+    if (url) {
+      execCommand("createLink", url)
+    }
   }
 
   return (
-    <div className="space-y-4">
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "visual" | "html")}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="visual" className="flex items-center gap-2">
-            <Eye className="h-4 w-4" />
-            Visuell
-          </TabsTrigger>
-          <TabsTrigger value="html" className="flex items-center gap-2">
-            <Code className="h-4 w-4" />
-            HTML
-          </TabsTrigger>
-        </TabsList>
+    <div className="border rounded-lg">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <div className="border-b">
+          <TabsList className="h-auto p-1">
+            <TabsTrigger value="visual" className="flex items-center gap-2">
+              <Eye className="h-4 w-4" />
+              Visual
+            </TabsTrigger>
+            <TabsTrigger value="html" className="flex items-center gap-2">
+              <Code className="h-4 w-4" />
+              HTML
+            </TabsTrigger>
+            <TabsTrigger value="preview" className="flex items-center gap-2">
+              <Type className="h-4 w-4" />
+              Vorschau
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-        <TabsContent value="visual" className="space-y-4">
-          {/* Formatting Toolbar */}
-          <div className="border rounded-lg p-3 bg-muted/30">
-            <div className="flex flex-wrap gap-1">
-              {formatButtons.map((button, index) => (
-                <Button
-                  key={index}
-                  variant="ghost"
-                  size="sm"
-                  onClick={button.action}
-                  title={button.label}
-                  className="h-8 w-8 p-0"
-                >
-                  <button.icon className="h-4 w-4" />
-                </Button>
-              ))}
-              <div className="w-px h-6 bg-border mx-1" />
-              <Button variant="ghost" size="sm" onClick={insertParagraph} title="Absatz" className="h-8 px-2 text-xs">
-                P
+        <TabsContent value="visual" className="m-0">
+          {/* Toolbar */}
+          <div className="border-b p-2 flex flex-wrap gap-1">
+            <div className="flex gap-1 border-r pr-2 mr-2">
+              <Button variant="ghost" size="sm" onClick={() => insertHeading(1)} title="Überschrift 1">
+                H1
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => insertHeading(2)} title="Überschrift 2">
+                H2
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => insertHeading(3)} title="Überschrift 3">
+                H3
+              </Button>
+            </div>
+
+            <div className="flex gap-1 border-r pr-2 mr-2">
+              <Button variant="ghost" size="sm" onClick={() => execCommand("bold")} title="Fett (Ctrl+B)">
+                <Bold className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => execCommand("italic")} title="Kursiv (Ctrl+I)">
+                <Italic className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => execCommand("underline")} title="Unterstrichen (Ctrl+U)">
+                <Underline className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="flex gap-1 border-r pr-2 mr-2">
+              <Button variant="ghost" size="sm" onClick={() => execCommand("insertUnorderedList")} title="Aufzählung">
+                <List className="h-4 w-4" />
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={insertLineBreak}
-                title="Zeilenumbruch"
-                className="h-8 px-2 text-xs"
+                onClick={() => execCommand("insertOrderedList")}
+                title="Nummerierte Liste"
               >
-                BR
+                <ListOrdered className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="flex gap-1 border-r pr-2 mr-2">
+              <Button variant="ghost" size="sm" onClick={insertLink} title="Link einfügen">
+                <Link className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="flex gap-1">
+              <Button variant="ghost" size="sm" onClick={() => execCommand("undo")} title="Rückgängig (Ctrl+Z)">
+                <Undo className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => execCommand("redo")} title="Wiederholen (Ctrl+Y)">
+                <Redo className="h-4 w-4" />
               </Button>
             </div>
           </div>
 
-          {/* HTML Editor */}
+          {/* Editor */}
+          <div
+            ref={editorRef}
+            contentEditable
+            className="min-h-[400px] p-4 focus:outline-none"
+            style={{ color: "#000000" }}
+            onInput={updateContent}
+            onBlur={updateContent}
+            suppressContentEditableWarning={true}
+          />
+        </TabsContent>
+
+        <TabsContent value="html" className="m-0">
           <Textarea
             ref={textareaRef}
-            value={htmlContent}
-            onChange={(e) => {
-              setHtmlContent(e.target.value)
-              onChange(e.target.value)
-            }}
+            value={value}
+            onChange={handleTextareaChange}
             placeholder={placeholder}
-            rows={rows}
-            className="font-mono text-sm"
+            className="min-h-[400px] font-mono text-sm border-0 rounded-none resize-none focus:ring-0"
           />
-
-          {/* Quick Help */}
-          <div className="text-xs text-muted-foreground bg-muted/30 p-3 rounded-lg">
-            <p className="font-medium mb-2">Schnellhilfe:</p>
-            <div className="grid grid-cols-2 gap-2">
-              <div>• Wählen Sie Text aus und klicken Sie auf die Formatierungs-Buttons</div>
-              <div>• &lt;br /&gt; für Zeilenumbruch</div>
-              <div>• &lt;p&gt;&lt;/p&gt; für Absätze</div>
-              <div>• &lt;strong&gt;&lt;/strong&gt; für fetten Text</div>
-            </div>
+          <div className="p-2 text-xs text-gray-500 border-t bg-gray-50">
+            <strong>HTML Tags:</strong> &lt;h1&gt;, &lt;h2&gt;, &lt;h3&gt;, &lt;p&gt;, &lt;strong&gt;, &lt;em&gt;,
+            &lt;u&gt;, &lt;ul&gt;, &lt;ol&gt;, &lt;li&gt;, &lt;a href=""&gt;, &lt;br&gt;
           </div>
         </TabsContent>
 
-        <TabsContent value="html" className="space-y-4">
-          {/* Preview */}
-          <div className="border rounded-lg p-4 bg-muted/30">
-            <h4 className="font-medium mb-3 text-sm">Vorschau:</h4>
+        <TabsContent value="preview" className="m-0">
+          <div className="min-h-[400px] p-4 bg-gray-50">
             <div
-              className="prose prose-sm max-w-none dark:prose-invert"
-              dangerouslySetInnerHTML={{ __html: htmlContent }}
+              className="prose prose-sm max-w-none"
+              style={{ color: "#000000" }}
+              dangerouslySetInnerHTML={{ __html: value }}
             />
           </div>
-
-          {/* HTML Source */}
-          <Textarea
-            value={htmlContent}
-            onChange={(e) => {
-              setHtmlContent(e.target.value)
-              onChange(e.target.value)
-            }}
-            placeholder={placeholder}
-            rows={rows}
-            className="font-mono text-sm"
-          />
         </TabsContent>
       </Tabs>
     </div>

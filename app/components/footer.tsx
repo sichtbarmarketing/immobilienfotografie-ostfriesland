@@ -1,92 +1,65 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
-import LegalPopup from "./legal-popup"
-import DynamicLogo from "./dynamic-logo"
+import { LegalPopup } from "./legal-popup"
 
 export default function Footer() {
-  const [impressumOpen, setImpressumOpen] = useState(false)
-  const [datenschutzOpen, setDatenschutzOpen] = useState(false)
+  const [showLegal, setShowLegal] = useState(false)
+  const [legalType, setLegalType] = useState<"impressum" | "datenschutz">("impressum")
+
+  const openLegal = (type: "impressum" | "datenschutz") => {
+    setLegalType(type)
+    setShowLegal(true)
+  }
 
   return (
-    <footer className="bg-black text-white">
-      <div className="container mx-auto px-4 md:px-6 py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-          <div className="md:col-span-1">
-            <Link href="/" className="inline-block mb-6">
-              <DynamicLogo iconClassName="h-8 w-auto filter brightness-0 invert" />
-            </Link>
-            <p className="text-white/70 mb-6 max-w-md">
-              Professionelle Immobilienfotografie, Immobilienvideos und Virtual Homestaging in ganz Ostfriesland. Ich
-              helfe Ihnen, Ihre Immobilie optimal zu präsentieren.
-            </p>
+    <>
+      <footer className="bg-white py-12 px-4 border-t">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="md:col-span-2">
+              <h3 className="text-lg font-semibold mb-4 text-black">Professionelle Immobilienfotografie</h3>
+              <p className="text-gray-600 mb-4">
+                Hochwertige Fotografie für Immobilien, die Ihre Objekte ins beste Licht rückt und potenzielle Käufer
+                begeistert.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-4 text-black">Kontakt</h3>
+              <ul className="space-y-2">
+                <li className="text-gray-600">+49 151 424 833 23</li>
+                <li className="text-gray-600">info@sichtbar-marketing.de</li>
+                <li className="text-gray-600">
+                  Vaderkoborg 24a
+                  <br />
+                  26789 Leer
+                </li>
+              </ul>
+            </div>
           </div>
-          <div>
-            <h3 className="text-lg font-medium mb-4">Dienstleistungen</h3>
-            <ul className="space-y-3">
-              <li>
-                <Link href="#services" className="text-white/70 hover:text-white transition-colors">
-                  Immobilienfotografie
-                </Link>
-              </li>
-              <li>
-                <Link href="#services" className="text-white/70 hover:text-white transition-colors">
-                  Immobilienvideos
-                </Link>
-              </li>
-              <li>
-                <Link href="#homestaging" className="text-white/70 hover:text-white transition-colors">
-                  Virtual Homestaging
-                </Link>
-              </li>
-              <li>
-                <Link href="#services" className="text-white/70 hover:text-white transition-colors">
-                  Drohnenaufnahmen
-                </Link>
-              </li>
-              <li>
-                <Link href="#services" className="text-white/70 hover:text-white transition-colors">
-                  360° Rundgänge
-                </Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-lg font-medium mb-4">Rechtliches</h3>
-            <ul className="space-y-3">
-              <li>
-                <button
-                  onClick={() => setImpressumOpen(true)}
-                  className="text-white/70 hover:text-white transition-colors"
-                >
-                  Impressum
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => setDatenschutzOpen(true)}
-                  className="text-white/70 hover:text-white transition-colors"
-                >
-                  Datenschutz
-                </button>
-              </li>
-            </ul>
+
+          <div className="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+            <p className="text-gray-600 text-sm">© 2024 Immobilienfotografie. Alle Rechte vorbehalten.</p>
+            <div className="flex space-x-6 mt-4 md:mt-0">
+              <button
+                onClick={() => openLegal("impressum")}
+                className="text-black hover:text-gray-700 text-sm font-medium underline"
+              >
+                Impressum
+              </button>
+              <button
+                onClick={() => openLegal("datenschutz")}
+                className="text-black hover:text-gray-700 text-sm font-medium underline"
+              >
+                Datenschutz
+              </button>
+            </div>
           </div>
         </div>
-        <div className="border-t border-white/10 mt-12 pt-8 text-center text-white/50">
-          <p>© {new Date().getFullYear()} sichtbar.immo | Immobilienfotograf Ostfriesland. Alle Rechte vorbehalten.</p>
-        </div>
-      </div>
+      </footer>
 
-      {/* Legal Popups */}
-      {impressumOpen && (
-        <LegalPopup contentKey="impressum" isOpen={impressumOpen} onClose={() => setImpressumOpen(false)} />
-      )}
-
-      {datenschutzOpen && (
-        <LegalPopup contentKey="datenschutz" isOpen={datenschutzOpen} onClose={() => setDatenschutzOpen(false)} />
-      )}
-    </footer>
+      <LegalPopup isOpen={showLegal} onClose={() => setShowLegal(false)} type={legalType} />
+    </>
   )
 }

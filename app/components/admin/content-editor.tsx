@@ -497,6 +497,7 @@ function LegalEditor() {
                 <div
                   className="prose prose-sm max-w-none dark:prose-invert"
                   dangerouslySetInnerHTML={{ __html: impressumContent?.content || "Kein Inhalt verfügbar" }}
+                  style={{ color: "#000000" }}
                 />
               </div>
             ) : (
@@ -515,7 +516,6 @@ function LegalEditor() {
                       }
                     }}
                     placeholder="Geben Sie hier den Inhalt Ihres Impressums ein..."
-                    rows={20}
                   />
                   <input type="hidden" name="content" value={impressumContent?.content || ""} />
                 </div>
@@ -549,6 +549,7 @@ function LegalEditor() {
                 <div
                   className="prose prose-sm max-w-none dark:prose-invert"
                   dangerouslySetInnerHTML={{ __html: datenschutzContent?.content || "Kein Inhalt verfügbar" }}
+                  style={{ color: "#000000" }}
                 />
               </div>
             ) : (
@@ -567,7 +568,6 @@ function LegalEditor() {
                       }
                     }}
                     placeholder="Geben Sie hier den Inhalt Ihrer Datenschutzerklärung ein..."
-                    rows={20}
                   />
                   <input type="hidden" name="content" value={datenschutzContent?.content || ""} />
                 </div>

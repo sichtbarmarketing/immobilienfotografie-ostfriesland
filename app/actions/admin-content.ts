@@ -1,68 +1,43 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
-
-// Types
-export type ContentUpdateResult = {
-  success: boolean
-  message: string
-}
-
-// Create a Supabase client with better error handling
-function createSupabaseClient() {
-  try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-      console.warn("Supabase credentials not configured")
-      return null
-    }
-
-    const { createClient } = require("@supabase/supabase-js")
-    return createClient(supabaseUrl, supabaseAnonKey)
-  } catch (error) {
-    console.warn("Error creating Supabase client:", error)
-    return null
-  }
-}
+import { supabaseAdmin } from "@/app/lib/supabase-admin"
 
 // In-memory storage as fallback
-const contentStorage = new Map<string, any>()
-
-// Initialize with default content
-const initializeStorage = () => {
-  if (contentStorage.size === 0) {
-    const defaultContent = [
-      {
-        id: 1,
-        key: "hero_title",
-        title: "Hero Titel",
-        content: "Immobilienfotografie neu definiert.",
-      },
-      {
-        id: 2,
-        key: "hero_subtitle",
-        title: "Hero Untertitel",
-        content: "Professionelle Immobilienfotografie, Videos und Virtual Homestaging in Ostfriesland.",
-      },
-      {
-        id: 3,
-        key: "about_title",
-        title: "Über uns Titel",
-        content: "Über sichtbar.immo",
-      },
-      {
-        id: 4,
-        key: "contact_title",
-        title: "Kontakt Titel",
-        content: "Jetzt unverbindlich anfragen",
-      },
-      {
-        id: 5,
-        key: "impressum",
-        title: "Impressum",
-        content: `<h2>Angaben gemäß § 5 TMG</h2>
+const memoryStorage: Array<{
+  id: number
+  key: string
+  title: string
+  content: string
+}> = [
+  {
+    id: 1,
+    key: "hero_title",
+    title: "Hero Titel",
+    content: "Immobilienfotografie neu definiert.",
+  },
+  {
+    id: 2,
+    key: "hero_subtitle",
+    title: "Hero Untertitel",
+    content: "Professionelle Immobilienfotografie, Videos und Virtual Homestaging in Ostfriesland.",
+  },
+  {
+    id: 3,
+    key: "about_title",
+    title: "Über uns Titel",
+    content: "Über sichtbar.immo",
+  },
+  {
+    id: 4,
+    key: "contact_title",
+    title: "Kontakt Titel",
+    content: "Jetzt unverbindlich anfragen",
+  },
+  {
+    id: 5,
+    key: "impressum",
+    title: "Impressum",
+    content: `<h2>Angaben gemäß § 5 TMG</h2>
 <p>
   Max Mustermann<br />
   sichtbar.immo<br />
@@ -95,12 +70,12 @@ const initializeStorage = () => {
   Musterstraße 123<br />
   26789 Leer
 </p>`,
-      },
-      {
-        id: 6,
-        key: "datenschutz",
-        title: "Datenschutzerklärung",
-        content: `<h2>1. Datenschutz auf einen Blick</h2>
+  },
+  {
+    id: 6,
+    key: "datenschutz",
+    title: "Datenschutzerklärung",
+    content: `<h2>1. Datenschutz auf einen Blick</h2>
 <h3>Allgemeine Hinweise</h3>
 <p>
   Die folgenden Hinweise geben einen einfachen Überblick darüber, was mit Ihren personenbezogenen Daten passiert, wenn Sie diese Website besuchen. Personenbezogene Daten sind alle Daten, mit denen Sie persönlich identifiziert werden können. Ausführliche Informationen zum Thema Datenschutz entnehmen Sie unserer unter diesem Text aufgeführten Datenschutzerklärung.
@@ -126,93 +101,100 @@ const initializeStorage = () => {
   <strong>Welche Rechte haben Sie bezüglich Ihrer Daten?</strong><br />
   Sie haben jederzeit das Recht, unentgeltlich Auskunft über Herkunft, Empfänger und Zweck Ihrer gespeicherten personenbezogenen Daten zu erhalten. Sie haben außerdem ein Recht, die Berichtigung oder Löschung dieser Daten zu verlangen. Wenn Sie eine Einwilligung zur Datenverarbeitung erteilt haben, können Sie diese Einwilligung jederzeit für die Zukunft widerrufen. Außerdem haben Sie das Recht, unter bestimmten Umständen die Einschränkung der Verarbeitung Ihrer personenbezogenen Daten zu verlangen.
 </p>`,
-      },
-    ]
+  },
+]
 
-    defaultContent.forEach((item) => {
-      contentStorage.set(item.key, item)
-    })
-  }
-}
-
-// Update site content
-export async function updateSiteContent(formData: FormData): Promise<ContentUpdateResult> {
+export async function updateSiteContent(formData: FormData) {
   try {
     const key = formData.get("key") as string
-    const id = formData.get("id") as string
     const title = formData.get("title") as string
     const content = formData.get("content") as string
+    const id = Number.parseInt(formData.get("id") as string)
 
-    console.log("Updating content:", { key, id, title, contentLength: content?.length })
+    console.log("Updating content:", { key, title, contentLength: content?.length, id })
 
-    if (!key || !title || !content) {
+    // Try Supabase first
+    try {
+      const { data, error } = await supabaseAdmin
+        .from("site_content")
+        .upsert({
+          id,
+          key,
+          title,
+          content,
+          updated_at: new Date().toISOString(),
+        })
+        .select()
+
+      if (error) {
+        console.warn("Supabase error, using memory storage:", error)
+        throw error
+      }
+
+      console.log("Supabase update successful:", data)
+
+      // Also update memory storage
+      const existingIndex = memoryStorage.findIndex((item) => item.key === key)
+      if (existingIndex >= 0) {
+        memoryStorage[existingIndex] = { id, key, title, content }
+      } else {
+        memoryStorage.push({ id, key, title, content })
+      }
+
       return {
-        success: false,
-        message: "Schlüssel, Titel und Inhalt sind erforderlich",
+        success: true,
+        message: "Inhalt erfolgreich gespeichert!",
       }
-    }
+    } catch (supabaseError) {
+      console.warn("Supabase failed, using memory storage:", supabaseError)
 
-    // Initialize storage if empty
-    initializeStorage()
-
-    const supabase = createSupabaseClient()
-
-    if (supabase) {
-      try {
-        // Try to update in Supabase first
-        const { data, error } = await supabase
-          .from("site_content")
-          .upsert({
-            id: Number.parseInt(id),
-            key,
-            title,
-            content,
-            updated_at: new Date().toISOString(),
-          })
-          .select()
-
-        if (error) {
-          console.warn("Supabase update failed, using local storage:", error.message)
-        } else {
-          console.log("Content updated in Supabase successfully")
-        }
-      } catch (supabaseError) {
-        console.warn("Supabase operation failed, using local storage:", supabaseError)
+      // Fallback to memory storage
+      const existingIndex = memoryStorage.findIndex((item) => item.key === key)
+      if (existingIndex >= 0) {
+        memoryStorage[existingIndex] = { id, key, title, content }
+      } else {
+        memoryStorage.push({ id, key, title, content })
       }
-    }
 
-    // Always update local storage as backup
-    contentStorage.set(key, {
-      id: Number.parseInt(id),
-      key,
-      title,
-      content,
-      updated_at: new Date().toISOString(),
-    })
+      console.log(
+        "Memory storage updated:",
+        memoryStorage.find((item) => item.key === key),
+      )
 
-    console.log("Content updated successfully for key:", key)
-    console.log("Current storage size:", contentStorage.size)
-
-    // Revalidate paths
-    revalidatePath("/")
-    revalidatePath("/admin/dashboard")
-    revalidatePath("/admin")
-
-    return {
-      success: true,
-      message: `${title} erfolgreich gespeichert`,
+      return {
+        success: true,
+        message: "Inhalt erfolgreich gespeichert (lokaler Speicher)!",
+      }
     }
   } catch (error) {
-    console.error("Content update error:", error)
+    console.error("Error updating content:", error)
     return {
       success: false,
-      message: "Ein unerwarteter Fehler ist aufgetreten",
+      message: "Fehler beim Speichern des Inhalts",
     }
   }
 }
 
-// Get content (for API to use)
-export async function getStoredContent() {
-  initializeStorage()
-  return Array.from(contentStorage.values())
+export async function getSiteContent() {
+  try {
+    // Try Supabase first
+    const { data, error } = await supabaseAdmin.from("site_content").select("*").order("id")
+
+    if (error) {
+      console.warn("Supabase error, using memory storage:", error)
+      throw error
+    }
+
+    if (data && data.length > 0) {
+      console.log("Loaded content from Supabase:", data.length, "items")
+      return data
+    } else {
+      console.log("No data in Supabase, using memory storage")
+      return memoryStorage
+    }
+  } catch (error) {
+    console.warn("Supabase failed, using memory storage:", error)
+    console.log("Memory storage content:", memoryStorage.length, "items")
+    return memoryStorage
+  }
 }
