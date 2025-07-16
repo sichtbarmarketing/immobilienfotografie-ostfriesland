@@ -32,7 +32,8 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
 
   const updateContent = () => {
     if (editorRef.current) {
-      onChange(editorRef.current.innerHTML)
+      const content = editorRef.current.innerHTML
+      onChange(content)
     }
   }
 
@@ -40,102 +41,88 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
     onChange(e.target.value)
   }
 
-  const insertHeading = (level: number) => {
-    execCommand("formatBlock", `h${level}`)
-  }
-
   const insertLink = () => {
-    const url = prompt("Link URL eingeben:")
+    const url = prompt("URL eingeben:")
     if (url) {
       execCommand("createLink", url)
     }
   }
 
+  const formatHeading = (level: number) => {
+    execCommand("formatBlock", `h${level}`)
+  }
+
   return (
-    <div className="border rounded-lg">
+    <div className="border rounded-lg overflow-hidden">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="border-b">
-          <TabsList className="h-auto p-1">
-            <TabsTrigger value="visual" className="flex items-center gap-2">
-              <Eye className="h-4 w-4" />
-              Visual
-            </TabsTrigger>
-            <TabsTrigger value="html" className="flex items-center gap-2">
-              <Code className="h-4 w-4" />
-              HTML
-            </TabsTrigger>
-            <TabsTrigger value="preview" className="flex items-center gap-2">
-              <Type className="h-4 w-4" />
-              Vorschau
-            </TabsTrigger>
-          </TabsList>
+        <div className="border-b bg-gray-50 p-2">
+          <div className="flex items-center justify-between">
+            <TabsList className="grid w-fit grid-cols-3">
+              <TabsTrigger value="visual" className="text-xs">
+                <Eye className="w-3 h-3 mr-1" />
+                Visual
+              </TabsTrigger>
+              <TabsTrigger value="html" className="text-xs">
+                <Code className="w-3 h-3 mr-1" />
+                HTML
+              </TabsTrigger>
+              <TabsTrigger value="preview" className="text-xs">
+                <Type className="w-3 h-3 mr-1" />
+                Vorschau
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          {activeTab === "visual" && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              <Button variant="outline" size="sm" onClick={() => formatHeading(1)} className="text-xs h-7">
+                H1
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => formatHeading(2)} className="text-xs h-7">
+                H2
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => formatHeading(3)} className="text-xs h-7">
+                H3
+              </Button>
+              <div className="w-px h-6 bg-gray-300 mx-1" />
+              <Button variant="outline" size="sm" onClick={() => execCommand("bold")} className="h-7">
+                <Bold className="w-3 h-3" />
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => execCommand("italic")} className="h-7">
+                <Italic className="w-3 h-3" />
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => execCommand("underline")} className="h-7">
+                <Underline className="w-3 h-3" />
+              </Button>
+              <div className="w-px h-6 bg-gray-300 mx-1" />
+              <Button variant="outline" size="sm" onClick={() => execCommand("insertUnorderedList")} className="h-7">
+                <List className="w-3 h-3" />
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => execCommand("insertOrderedList")} className="h-7">
+                <ListOrdered className="w-3 h-3" />
+              </Button>
+              <Button variant="outline" size="sm" onClick={insertLink} className="h-7 bg-transparent">
+                <Link className="w-3 h-3" />
+              </Button>
+              <div className="w-px h-6 bg-gray-300 mx-1" />
+              <Button variant="outline" size="sm" onClick={() => execCommand("undo")} className="h-7">
+                <Undo className="w-3 h-3" />
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => execCommand("redo")} className="h-7">
+                <Redo className="w-3 h-3" />
+              </Button>
+            </div>
+          )}
         </div>
 
         <TabsContent value="visual" className="m-0">
-          {/* Toolbar */}
-          <div className="border-b p-2 flex flex-wrap gap-1">
-            <div className="flex gap-1 border-r pr-2 mr-2">
-              <Button variant="ghost" size="sm" onClick={() => insertHeading(1)} title="Überschrift 1">
-                H1
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => insertHeading(2)} title="Überschrift 2">
-                H2
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => insertHeading(3)} title="Überschrift 3">
-                H3
-              </Button>
-            </div>
-
-            <div className="flex gap-1 border-r pr-2 mr-2">
-              <Button variant="ghost" size="sm" onClick={() => execCommand("bold")} title="Fett (Ctrl+B)">
-                <Bold className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => execCommand("italic")} title="Kursiv (Ctrl+I)">
-                <Italic className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => execCommand("underline")} title="Unterstrichen (Ctrl+U)">
-                <Underline className="h-4 w-4" />
-              </Button>
-            </div>
-
-            <div className="flex gap-1 border-r pr-2 mr-2">
-              <Button variant="ghost" size="sm" onClick={() => execCommand("insertUnorderedList")} title="Aufzählung">
-                <List className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => execCommand("insertOrderedList")}
-                title="Nummerierte Liste"
-              >
-                <ListOrdered className="h-4 w-4" />
-              </Button>
-            </div>
-
-            <div className="flex gap-1 border-r pr-2 mr-2">
-              <Button variant="ghost" size="sm" onClick={insertLink} title="Link einfügen">
-                <Link className="h-4 w-4" />
-              </Button>
-            </div>
-
-            <div className="flex gap-1">
-              <Button variant="ghost" size="sm" onClick={() => execCommand("undo")} title="Rückgängig (Ctrl+Z)">
-                <Undo className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => execCommand("redo")} title="Wiederholen (Ctrl+Y)">
-                <Redo className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Editor */}
           <div
             ref={editorRef}
             contentEditable
-            className="min-h-[400px] p-4 focus:outline-none"
-            style={{ color: "#000000" }}
+            className="min-h-[400px] p-4 focus:outline-none prose prose-sm max-w-none [&_*]:text-black"
             onInput={updateContent}
             onBlur={updateContent}
+            style={{ color: "#000000" }}
             suppressContentEditableWarning={true}
           />
         </TabsContent>
@@ -145,25 +132,27 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
             ref={textareaRef}
             value={value}
             onChange={handleTextareaChange}
-            placeholder={placeholder}
             className="min-h-[400px] font-mono text-sm border-0 rounded-none resize-none focus:ring-0"
+            placeholder={placeholder}
           />
-          <div className="p-2 text-xs text-gray-500 border-t bg-gray-50">
-            <strong>HTML Tags:</strong> &lt;h1&gt;, &lt;h2&gt;, &lt;h3&gt;, &lt;p&gt;, &lt;strong&gt;, &lt;em&gt;,
-            &lt;u&gt;, &lt;ul&gt;, &lt;ol&gt;, &lt;li&gt;, &lt;a href=""&gt;, &lt;br&gt;
-          </div>
         </TabsContent>
 
         <TabsContent value="preview" className="m-0">
           <div className="min-h-[400px] p-4 bg-gray-50">
             <div
-              className="prose prose-sm max-w-none"
-              style={{ color: "#000000" }}
+              className="prose prose-sm max-w-none [&_*]:text-black [&_h1]:text-black [&_h2]:text-black [&_h3]:text-black [&_p]:text-black [&_strong]:text-black"
               dangerouslySetInnerHTML={{ __html: value }}
             />
           </div>
         </TabsContent>
       </Tabs>
+
+      <div className="border-t bg-gray-50 p-2 text-xs text-gray-600">
+        <p>
+          <strong>Tipp:</strong> Verwenden Sie die Toolbar-Buttons oder Tastenkürzel (Strg+B für Fett, Strg+I für
+          Kursiv). Im HTML-Tab können Sie direkt HTML-Code bearbeiten.
+        </p>
+      </div>
     </div>
   )
 }

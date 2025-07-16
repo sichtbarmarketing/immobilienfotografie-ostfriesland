@@ -1,51 +1,51 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getSiteContent } from "@/app/actions/admin-content"
+import { createClient } from "@supabase/supabase-js"
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 export async function GET(request: NextRequest) {
   try {
-    console.log("API: Fetching site content...")
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    const content = await getSiteContent()
+    const { data, error } = await supabase.from("site_content").select("*").order("key")
 
-    console.log("API: Content fetched:", content?.length, "items")
+    if (error) {
+      console.error("Supabase error:", error)
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+    }
 
-    return NextResponse.json({
-      success: true,
-      content: content || [],
-    })
+    return NextResponse.json({ success: true, content: data || [] })
   } catch (error) {
-    console.error("API Error fetching content:", error)
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Failed to fetch content",
-        content: [],
-      },
-      { status: 500 },
-    )
+    console.error("API error:", error)
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    console.log("API: Updating content:", body)
+    const { key, title, content } = body
 
-    // Handle content updates here if needed
-    return NextResponse.json({
-      success: true,
-      message: "Content updated successfully",
-    })
+    if (!key || !title || !content) {
+      return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 })
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+    const { data, error } = await supabase
+      .from("site_content")
+      .upsert({ key, title, content }, { onConflict: "key" })
+      .select()
+
+    if (error) {
+      console.error("Supabase error:", error)
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true, data })
   } catch (error) {
-    console.error("API Error updating content:", error)
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Failed to update content",
-      },
-      { status: 500 },
-    )
+    console.error("API error:", error)
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 })
   }
 }

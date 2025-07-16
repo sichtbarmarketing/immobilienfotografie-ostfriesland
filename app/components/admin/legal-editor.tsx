@@ -3,116 +3,153 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { RichTextEditor } from "./rich-text-editor"
-import { updateSiteContent } from "@/app/actions/admin-content"
+
+interface LegalContent {
+  key: string
+  title: string
+  content: string
+}
 
 export function LegalEditor() {
-  const [impressumContent, setImpressumContent] = useState("")
-  const [datenschutzContent, setDatenschutzContent] = useState("")
+  const [activeTab, setActiveTab] = useState("impressum")
+  const [content, setContent] = useState<Record<string, LegalContent>>({
+    impressum: { key: "impressum", title: "Impressum", content: "" },
+    datenschutz: { key: "datenschutz", title: "Datenschutzerklärung", content: "" },
+  })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
-  const [activeTab, setActiveTab] = useState("impressum")
   const [previewMode, setPreviewMode] = useState(false)
 
   useEffect(() => {
-    loadContent()
+    fetchContent()
   }, [])
 
-  const loadContent = async () => {
-    setLoading(true)
+  const fetchContent = async () => {
     try {
-      const [impressumResponse, datenschutzResponse] = await Promise.all([
-        fetch("/api/admin/content?type=impressum"),
-        fetch("/api/admin/content?type=datenschutz"),
-      ])
+      setLoading(true)
+      const response = await fetch("/api/admin/content")
+      const data = await response.json()
 
-      if (impressumResponse.ok) {
-        const impressumData = await impressumResponse.json()
-        setImpressumContent(impressumData.content || getDefaultImpressum())
-      } else {
-        setImpressumContent(getDefaultImpressum())
-      }
+      if (data.success && Array.isArray(data.content)) {
+        const contentMap: Record<string, LegalContent> = {
+          impressum: { key: "impressum", title: "Impressum", content: getDefaultImpressum() },
+          datenschutz: { key: "datenschutz", title: "Datenschutzerklärung", content: getDefaultDatenschutz() },
+        }
 
-      if (datenschutzResponse.ok) {
-        const datenschutzData = await datenschutzResponse.json()
-        setDatenschutzContent(datenschutzData.content || getDefaultDatenschutz())
-      } else {
-        setDatenschutzContent(getDefaultDatenschutz())
+        data.content.forEach((item: any) => {
+          if (item.key === "impressum" || item.key === "datenschutz") {
+            contentMap[item.key] = {
+              key: item.key,
+              title: item.title || contentMap[item.key].title,
+              content: item.content || contentMap[item.key].content,
+            }
+          }
+        })
+
+        setContent(contentMap)
       }
     } catch (error) {
-      console.error("Error loading content:", error)
-      setImpressumContent(getDefaultImpressum())
-      setDatenschutzContent(getDefaultDatenschutz())
+      console.error("Error fetching content:", error)
       setMessage({ type: "error", text: "Fehler beim Laden der Inhalte" })
     } finally {
       setLoading(false)
     }
   }
 
-  const getDefaultImpressum = () => `
-    <h1>Impressum</h1>
-    <h2>Angaben gemäß § 5 TMG</h2>
-    <p>
-      Sichtbar Marketing<br>
-      Vaderkoborg 24a<br>
-      26789 Leer
-    </p>
-    <h2>Kontakt</h2>
-    <p>
-      Telefon: +49 151 424 833 23<br>
-      E-Mail: info@sichtbar-marketing.de
-    </p>
-    <h2>Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h2>
-    <p>
-      Sichtbar Marketing<br>
-      Vaderkoborg 24a<br>
-      26789 Leer
-    </p>
-  `
+  const getDefaultImpressum = () => {
+    return `<h2>Angaben gemäß § 5 TMG</h2>
+<p>Sichtbar Marketing<br>
+Vaderkoborg 24a<br>
+26789 Leer</p>
 
-  const getDefaultDatenschutz = () => `
-    <h1>Datenschutzerklärung</h1>
-    <h2>1. Datenschutz auf einen Blick</h2>
-    <h3>Allgemeine Hinweise</h3>
-    <p>Die folgenden Hinweise geben einen einfachen Überblick darüber, was mit Ihren personenbezogenen Daten passiert, wenn Sie diese Website besuchen.</p>
-    
-    <h2>2. Allgemeine Hinweise und Pflichtinformationen</h2>
-    <h3>Datenschutz</h3>
-    <p>Die Betreiber dieser Seiten nehmen den Schutz Ihrer persönlichen Daten sehr ernst.</p>
-    
-    <h2>3. Datenerfassung auf dieser Website</h2>
-    <h3>Kontaktformular</h3>
-    <p>Wenn Sie uns per Kontaktformular Anfragen zukommen lassen, werden Ihre Angaben aus dem Anfrageformular inklusive der von Ihnen dort angegebenen Kontaktdaten zwecks Bearbeitung der Anfrage und für den Fall von Anschlussfragen bei uns gespeichert.</p>
-    
-    <p>Verantwortliche Stelle:<br>
-    Sichtbar Marketing<br>
-    Vaderkoborg 24a<br>
-    26789 Leer<br>
-    E-Mail: info@sichtbar-marketing.de</p>
-  `
+<h3>Kontakt</h3>
+<p>Telefon: +49 151 424 833 23<br>
+E-Mail: info@sichtbar-marketing.de</p>
+
+<h3>Umsatzsteuer-ID</h3>
+<p>Umsatzsteuer-Identifikationsnummer gemäß § 27 a Umsatzsteuergesetz:<br>
+DE123456789</p>
+
+<h3>Berufsbezeichnung und berufsrechtliche Regelungen</h3>
+<p>Berufsbezeichnung: Fotograf<br>
+Zuständige Kammer: Handwerkskammer Ostfriesland<br>
+Verliehen durch: Bundesrepublik Deutschland</p>
+
+<h3>Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h3>
+<p>Sichtbar Marketing<br>
+Vaderkoborg 24a<br>
+26789 Leer</p>`
+  }
+
+  const getDefaultDatenschutz = () => {
+    return `<h2>1. Datenschutz auf einen Blick</h2>
+<h3>Allgemeine Hinweise</h3>
+<p>Die folgenden Hinweise geben einen einfachen Überblick darüber, was mit Ihren personenbezogenen Daten passiert, wenn Sie diese Website besuchen. Personenbezogene Daten sind alle Daten, mit denen Sie persönlich identifiziert werden können.</p>
+
+<h3>Datenerfassung auf dieser Website</h3>
+<p><strong>Wer ist verantwortlich für die Datenerfassung auf dieser Website?</strong><br>
+Die Datenverarbeitung auf dieser Website erfolgt durch den Websitebetreiber. Dessen Kontaktdaten können Sie dem Impressum dieser Website entnehmen.</p>
+
+<p><strong>Wie erfassen wir Ihre Daten?</strong><br>
+Ihre Daten werden zum einen dadurch erhoben, dass Sie uns diese mitteilen. Hierbei kann es sich z. B. um Daten handeln, die Sie in ein Kontaktformular eingeben.</p>
+
+<p><strong>Wofür nutzen wir Ihre Daten?</strong><br>
+Ein Teil der Daten wird erhoben, um eine fehlerfreie Bereitstellung der Website zu gewährleisten. Andere Daten können zur Analyse Ihres Nutzerverhaltens verwendet werden.</p>
+
+<p><strong>Welche Rechte haben Sie bezüglich Ihrer Daten?</strong><br>
+Sie haben jederzeit das Recht, unentgeltlich Auskunft über Herkunft, Empfänger und Zweck Ihrer gespeicherten personenbezogenen Daten zu erhalten. Sie haben außerdem ein Recht, die Berichtigung oder Löschung dieser Daten zu verlangen.</p>
+
+<h2>2. Verantwortliche Stelle</h2>
+<p>Die verantwortliche Stelle für die Datenverarbeitung auf dieser Website ist:<br><br>
+Sichtbar Marketing<br>
+Vaderkoborg 24a<br>
+26789 Leer<br>
+Telefon: +49 151 424 833 23<br>
+E-Mail: info@sichtbar-marketing.de</p>`
+  }
+
+  const handleContentChange = (newContent: string) => {
+    setContent((prev) => ({
+      ...prev,
+      [activeTab]: {
+        ...prev[activeTab],
+        content: newContent,
+      },
+    }))
+  }
 
   const handleSave = async () => {
-    setSaving(true)
-    setMessage(null)
-
     try {
-      const currentContent = activeTab === "impressum" ? impressumContent : datenschutzContent
-      const result = await updateSiteContent(activeTab as "impressum" | "datenschutz", currentContent)
+      setSaving(true)
+      setMessage(null)
 
-      if (result.success) {
-        setMessage({
-          type: "success",
-          text: `${activeTab === "impressum" ? "Impressum" : "Datenschutzerklärung"} erfolgreich gespeichert`,
-        })
+      const currentContent = content[activeTab]
+      const response = await fetch("/api/admin/content", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          key: currentContent.key,
+          title: currentContent.title,
+          content: currentContent.content,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setMessage({ type: "success", text: "Inhalt erfolgreich gespeichert!" })
       } else {
-        setMessage({ type: "error", text: result.error || "Fehler beim Speichern" })
+        setMessage({ type: "error", text: data.error || "Fehler beim Speichern" })
       }
     } catch (error) {
-      console.error("Save error:", error)
-      setMessage({ type: "error", text: "Fehler beim Speichern" })
+      console.error("Error saving content:", error)
+      setMessage({ type: "error", text: "Fehler beim Speichern der Inhalte" })
     } finally {
       setSaving(false)
     }
@@ -121,8 +158,10 @@ export function LegalEditor() {
   if (loading) {
     return (
       <Card>
-        <CardContent className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+          </div>
         </CardContent>
       </Card>
     )
@@ -133,42 +172,42 @@ export function LegalEditor() {
       <CardHeader>
         <CardTitle>Rechtliche Inhalte bearbeiten</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {message && (
-          <Alert className={message.type === "error" ? "border-red-500 bg-red-50" : "border-green-500 bg-green-50"}>
-            <AlertDescription className={message.type === "error" ? "text-red-700" : "text-green-700"}>
-              {message.text}
-            </AlertDescription>
-          </Alert>
-        )}
-
+      <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="impressum">Impressum</TabsTrigger>
-            <TabsTrigger value="datenschutz">Datenschutzerklärung</TabsTrigger>
+            <TabsTrigger value="datenschutz">Datenschutz</TabsTrigger>
           </TabsList>
 
           <TabsContent value="impressum" className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-medium">Impressum bearbeiten</h3>
-              <Button variant="outline" onClick={() => setPreviewMode(!previewMode)}>
-                {previewMode ? "Bearbeiten" : "Vorschau"}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant={previewMode ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setPreviewMode(!previewMode)}
+                >
+                  {previewMode ? "Bearbeiten" : "Vorschau"}
+                </Button>
+                <Button onClick={handleSave} disabled={saving} size="sm">
+                  {saving ? "Speichern..." : "Speichern"}
+                </Button>
+              </div>
             </div>
 
             {previewMode ? (
               <div className="border rounded-lg p-4 bg-gray-50 min-h-[400px]">
                 <div
-                  className="prose prose-sm max-w-none"
-                  style={{ color: "#000000" }}
-                  dangerouslySetInnerHTML={{ __html: impressumContent }}
+                  className="prose prose-sm max-w-none [&_*]:text-black [&_h1]:text-black [&_h2]:text-black [&_h3]:text-black [&_p]:text-black [&_strong]:text-black"
+                  dangerouslySetInnerHTML={{ __html: content.impressum.content }}
                 />
               </div>
             ) : (
               <RichTextEditor
-                value={impressumContent}
-                onChange={setImpressumContent}
-                placeholder="Impressum Inhalt eingeben..."
+                value={content.impressum.content}
+                onChange={handleContentChange}
+                placeholder="Impressum-Inhalt eingeben..."
               />
             )}
           </TabsContent>
@@ -176,34 +215,46 @@ export function LegalEditor() {
           <TabsContent value="datenschutz" className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-medium">Datenschutzerklärung bearbeiten</h3>
-              <Button variant="outline" onClick={() => setPreviewMode(!previewMode)}>
-                {previewMode ? "Bearbeiten" : "Vorschau"}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant={previewMode ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setPreviewMode(!previewMode)}
+                >
+                  {previewMode ? "Bearbeiten" : "Vorschau"}
+                </Button>
+                <Button onClick={handleSave} disabled={saving} size="sm">
+                  {saving ? "Speichern..." : "Speichern"}
+                </Button>
+              </div>
             </div>
 
             {previewMode ? (
               <div className="border rounded-lg p-4 bg-gray-50 min-h-[400px]">
                 <div
-                  className="prose prose-sm max-w-none"
-                  style={{ color: "#000000" }}
-                  dangerouslySetInnerHTML={{ __html: datenschutzContent }}
+                  className="prose prose-sm max-w-none [&_*]:text-black [&_h1]:text-black [&_h2]:text-black [&_h3]:text-black [&_p]:text-black [&_strong]:text-black"
+                  dangerouslySetInnerHTML={{ __html: content.datenschutz.content }}
                 />
               </div>
             ) : (
               <RichTextEditor
-                value={datenschutzContent}
-                onChange={setDatenschutzContent}
-                placeholder="Datenschutzerklärung Inhalt eingeben..."
+                value={content.datenschutz.content}
+                onChange={handleContentChange}
+                placeholder="Datenschutzerklärung-Inhalt eingeben..."
               />
             )}
           </TabsContent>
         </Tabs>
 
-        <div className="flex justify-end">
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? "Speichern..." : "Speichern"}
-          </Button>
-        </div>
+        {message && (
+          <Alert
+            className={`mt-4 ${message.type === "error" ? "border-red-200 bg-red-50" : "border-green-200 bg-green-50"}`}
+          >
+            <AlertDescription className={message.type === "error" ? "text-red-800" : "text-green-800"}>
+              {message.text}
+            </AlertDescription>
+          </Alert>
+        )}
       </CardContent>
     </Card>
   )
