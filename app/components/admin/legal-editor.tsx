@@ -87,29 +87,42 @@ Vaderkoborg 24a<br>
 
   const getDefaultDatenschutz = () => {
     return `<h2>1. Datenschutz auf einen Blick</h2>
+
 <h3>Allgemeine Hinweise</h3>
 <p>Die folgenden Hinweise geben einen einfachen Überblick darüber, was mit Ihren personenbezogenen Daten passiert, wenn Sie diese Website besuchen. Personenbezogene Daten sind alle Daten, mit denen Sie persönlich identifiziert werden können.</p>
 
 <h3>Datenerfassung auf dieser Website</h3>
-<p><strong>Wer ist verantwortlich für die Datenerfassung auf dieser Website?</strong><br>
-Die Datenverarbeitung auf dieser Website erfolgt durch den Websitebetreiber. Dessen Kontaktdaten können Sie dem Impressum dieser Website entnehmen.</p>
+<p><strong>Wer ist verantwortlich für die Datenerfassung auf dieser Website?</strong></p>
+<p>Die Datenverarbeitung auf dieser Website erfolgt durch den Websitebetreiber. Dessen Kontaktdaten können Sie dem Impressum dieser Website entnehmen.</p>
 
-<p><strong>Wie erfassen wir Ihre Daten?</strong><br>
-Ihre Daten werden zum einen dadurch erhoben, dass Sie uns diese mitteilen. Hierbei kann es sich z. B. um Daten handeln, die Sie in ein Kontaktformular eingeben.</p>
+<p><strong>Wie erfassen wir Ihre Daten?</strong></p>
+<p>Ihre Daten werden zum einen dadurch erhoben, dass Sie uns diese mitteilen. Hierbei kann es sich z. B. um Daten handeln, die Sie in ein Kontaktformular eingeben.</p>
 
-<p><strong>Wofür nutzen wir Ihre Daten?</strong><br>
-Ein Teil der Daten wird erhoben, um eine fehlerfreie Bereitstellung der Website zu gewährleisten. Andere Daten können zur Analyse Ihres Nutzerverhaltens verwendet werden.</p>
+<p><strong>Wofür nutzen wir Ihre Daten?</strong></p>
+<p>Ein Teil der Daten wird erhoben, um eine fehlerfreie Bereitstellung der Website zu gewährleisten. Andere Daten können zur Analyse Ihres Nutzerverhaltens verwendet werden.</p>
 
-<p><strong>Welche Rechte haben Sie bezüglich Ihrer Daten?</strong><br>
-Sie haben jederzeit das Recht, unentgeltlich Auskunft über Herkunft, Empfänger und Zweck Ihrer gespeicherten personenbezogenen Daten zu erhalten. Sie haben außerdem ein Recht, die Berichtigung oder Löschung dieser Daten zu verlangen.</p>
+<p><strong>Welche Rechte haben Sie bezüglich Ihrer Daten?</strong></p>
+<p>Sie haben jederzeit das Recht, unentgeltlich Auskunft über Herkunft, Empfänger und Zweck Ihrer gespeicherten personenbezogenen Daten zu erhalten. Sie haben außerdem ein Recht, die Berichtigung oder Löschung dieser Daten zu verlangen.</p>
 
 <h2>2. Verantwortliche Stelle</h2>
-<p>Die verantwortliche Stelle für die Datenverarbeitung auf dieser Website ist:<br><br>
-Sichtbar Marketing<br>
+<p>Die verantwortliche Stelle für die Datenverarbeitung auf dieser Website ist:</p>
+
+<p>Sichtbar Marketing<br>
 Vaderkoborg 24a<br>
 26789 Leer<br>
 Telefon: +49 151 424 833 23<br>
-E-Mail: info@sichtbar-marketing.de</p>`
+E-Mail: info@sichtbar-marketing.de</p>
+
+<h2>3. Datenerfassung auf dieser Website</h2>
+
+<h3>Kontaktformular</h3>
+<p>Wenn Sie uns per Kontaktformular Anfragen zukommen lassen, werden Ihre Angaben aus dem Anfrageformular inklusive der von Ihnen dort angegebenen Kontaktdaten zwecks Bearbeitung der Anfrage und für den Fall von Anschlussfragen bei uns gespeichert.</p>
+
+<p>Diese Daten geben wir nicht ohne Ihre Einwilligung weiter.</p>
+
+<p>Die Verarbeitung dieser Daten erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO, sofern Ihre Anfrage mit der Erfüllung eines Vertrags zusammenhängt oder zur Durchführung vorvertraglicher Maßnahmen erforderlich ist. In allen übrigen Fällen beruht die Verarbeitung auf unserem berechtigten Interesse an der effektiven Bearbeitung der an uns gerichteten Anfragen (Art. 6 Abs. 1 lit. f DSGVO) oder auf Ihrer Einwilligung (Art. 6 Abs. 1 lit. a DSGVO) sofern diese abgefragt wurde.</p>
+
+<p>Die von Ihnen im Kontaktformular eingegebenen Daten verbleiben bei uns, bis Sie uns zur Löschung auffordern, Ihre Einwilligung zur Speicherung widerrufen oder der Zweck für die Datenspeicherung entfällt (z. B. nach abgeschlossener Bearbeitung Ihrer Anfrage). Zwingende gesetzliche Bestimmungen – insbesondere Aufbewahrungsfristen – bleiben unberührt.</p>`
   }
 
   const handleContentChange = (newContent: string) => {
@@ -144,6 +157,8 @@ E-Mail: info@sichtbar-marketing.de</p>`
 
       if (data.success) {
         setMessage({ type: "success", text: "Inhalt erfolgreich gespeichert!" })
+        // Auto-hide success message after 3 seconds
+        setTimeout(() => setMessage(null), 3000)
       } else {
         setMessage({ type: "error", text: data.error || "Fehler beim Speichern" })
       }
@@ -161,6 +176,7 @@ E-Mail: info@sichtbar-marketing.de</p>`
         <CardContent className="p-6">
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            <span className="ml-2">Lade rechtliche Inhalte...</span>
           </div>
         </CardContent>
       </Card>
@@ -171,6 +187,10 @@ E-Mail: info@sichtbar-marketing.de</p>`
     <Card>
       <CardHeader>
         <CardTitle>Rechtliche Inhalte bearbeiten</CardTitle>
+        <p className="text-sm text-gray-600">
+          Bearbeiten Sie Impressum und Datenschutzerklärung. Beim Einfügen von Text werden Zeilenumbrüche automatisch
+          beibehalten.
+        </p>
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -197,10 +217,11 @@ E-Mail: info@sichtbar-marketing.de</p>`
             </div>
 
             {previewMode ? (
-              <div className="border rounded-lg p-4 bg-gray-50 min-h-[400px]">
+              <div className="border rounded-lg p-6 bg-gray-50 min-h-[400px]">
                 <div
-                  className="prose prose-sm max-w-none [&_*]:text-black [&_h1]:text-black [&_h2]:text-black [&_h3]:text-black [&_p]:text-black [&_strong]:text-black"
+                  className="prose prose-sm max-w-none [&_*]:text-black [&_h1]:text-black [&_h2]:text-black [&_h3]:text-black [&_p]:text-black [&_strong]:text-black [&_p]:mb-4 [&_h1]:mb-4 [&_h2]:mb-3 [&_h3]:mb-2"
                   dangerouslySetInnerHTML={{ __html: content.impressum.content }}
+                  style={{ lineHeight: "1.6" }}
                 />
               </div>
             ) : (
@@ -230,10 +251,11 @@ E-Mail: info@sichtbar-marketing.de</p>`
             </div>
 
             {previewMode ? (
-              <div className="border rounded-lg p-4 bg-gray-50 min-h-[400px]">
+              <div className="border rounded-lg p-6 bg-gray-50 min-h-[400px]">
                 <div
-                  className="prose prose-sm max-w-none [&_*]:text-black [&_h1]:text-black [&_h2]:text-black [&_h3]:text-black [&_p]:text-black [&_strong]:text-black"
+                  className="prose prose-sm max-w-none [&_*]:text-black [&_h1]:text-black [&_h2]:text-black [&_h3]:text-black [&_p]:text-black [&_strong]:text-black [&_p]:mb-4 [&_h1]:mb-4 [&_h2]:mb-3 [&_h3]:mb-2"
                   dangerouslySetInnerHTML={{ __html: content.datenschutz.content }}
+                  style={{ lineHeight: "1.6" }}
                 />
               </div>
             ) : (

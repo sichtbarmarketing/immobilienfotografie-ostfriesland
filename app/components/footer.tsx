@@ -4,62 +4,86 @@ import { useState } from "react"
 import { LegalPopup } from "./legal-popup"
 
 export default function Footer() {
-  const [showLegal, setShowLegal] = useState(false)
-  const [legalType, setLegalType] = useState<"impressum" | "datenschutz">("impressum")
+  const [legalPopup, setLegalPopup] = useState<{ type: "impressum" | "datenschutz"; isOpen: boolean }>({
+    type: "impressum",
+    isOpen: false,
+  })
 
-  const openLegal = (type: "impressum" | "datenschutz") => {
-    setLegalType(type)
-    setShowLegal(true)
+  const openLegalPopup = (type: "impressum" | "datenschutz") => {
+    setLegalPopup({ type, isOpen: true })
+  }
+
+  const closeLegalPopup = () => {
+    setLegalPopup({ ...legalPopup, isOpen: false })
   }
 
   return (
     <>
-      <footer className="bg-white py-12 px-4 border-t">
-        <div className="max-w-6xl mx-auto">
+      <footer className="bg-gray-900 text-white py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="md:col-span-2">
-              <h3 className="text-lg font-semibold mb-4 text-black">Professionelle Immobilienfotografie</h3>
-              <p className="text-gray-600 mb-4">
-                Hochwertige Fotografie für Immobilien, die Ihre Objekte ins beste Licht rückt und potenzielle Käufer
-                begeistert.
+            {/* Company Description */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Sichtbar Marketing</h3>
+              <p className="text-gray-300 text-sm leading-relaxed">
+                Professionelle Immobilienfotografie und Virtual Staging für Makler, Bauträger und Immobilienbesitzer.
+                Wir setzen Ihre Immobilien perfekt in Szene.
               </p>
             </div>
 
+            {/* Contact Information */}
             <div>
-              <h3 className="text-lg font-semibold mb-4 text-black">Kontakt</h3>
-              <ul className="space-y-2">
-                <li className="text-gray-600">+49 151 424 833 23</li>
-                <li className="text-gray-600">info@sichtbar-marketing.de</li>
-                <li className="text-gray-600">
+              <h3 className="text-lg font-semibold mb-4">Kontakt</h3>
+              <div className="space-y-2 text-sm text-gray-300">
+                <p>
+                  <span className="font-medium">Telefon:</span>
+                  <br />
+                  +49 151 424 833 23
+                </p>
+                <p>
+                  <span className="font-medium">E-Mail:</span>
+                  <br />
+                  info@sichtbar-marketing.de
+                </p>
+                <p>
+                  <span className="font-medium">Adresse:</span>
+                  <br />
                   Vaderkoborg 24a
                   <br />
                   26789 Leer
-                </li>
-              </ul>
+                </p>
+              </div>
+            </div>
+
+            {/* Legal Links */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Rechtliches</h3>
+              <div className="space-y-2">
+                <button
+                  onClick={() => openLegalPopup("impressum")}
+                  className="block text-sm text-gray-300 hover:text-white transition-colors duration-200 text-left"
+                >
+                  Impressum
+                </button>
+                <button
+                  onClick={() => openLegalPopup("datenschutz")}
+                  className="block text-sm text-gray-300 hover:text-white transition-colors duration-200 text-left"
+                >
+                  Datenschutzerklärung
+                </button>
+              </div>
             </div>
           </div>
 
-          <div className="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-600 text-sm">© 2024 Immobilienfotografie. Alle Rechte vorbehalten.</p>
-            <div className="flex space-x-6 mt-4 md:mt-0">
-              <button
-                onClick={() => openLegal("impressum")}
-                className="text-black hover:text-gray-700 text-sm font-medium underline"
-              >
-                Impressum
-              </button>
-              <button
-                onClick={() => openLegal("datenschutz")}
-                className="text-black hover:text-gray-700 text-sm font-medium underline"
-              >
-                Datenschutz
-              </button>
-            </div>
+          <div className="border-t border-gray-800 mt-8 pt-8 text-center">
+            <p className="text-sm text-gray-400">
+              © {new Date().getFullYear()} Sichtbar Marketing. Alle Rechte vorbehalten.
+            </p>
           </div>
         </div>
       </footer>
 
-      <LegalPopup isOpen={showLegal} onClose={() => setShowLegal(false)} type={legalType} />
+      <LegalPopup type={legalPopup.type} isOpen={legalPopup.isOpen} onClose={closeLegalPopup} />
     </>
   )
 }
